@@ -42,6 +42,10 @@ const (
 	combNumber  = uint(8)  // 5 if 64-bits
 	combTeeth   = uint(4)  // 5 if 64-bits
 	combSpacing = uint(14) // 18 if 64-bit
+
+	// Decaf Parameters
+	decafScalarBytes         = 56
+	decafScalarOverkillBytes = decafScalarBytes + 8
 )
 
 var (
