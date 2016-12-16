@@ -39,3 +39,9 @@ func (n *bigNumber) decafMul(x, y *bigNumber) *bigNumber {
 
 	return n
 }
+
+// XXX until we found out the new implementation of MH
+func (n *bigNumber) decafSqr(x *bigNumber, y uint) *bigNumber {
+	sqr := n.squareN(x, y)
+	return sqr
+}
