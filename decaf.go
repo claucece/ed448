@@ -4,8 +4,8 @@ const (
 	// D is the non-square element of F_p
 	d                = -39081
 	montgomeryFactor = "3bd440fae918bc5ull"
-	lbits            = 28                     // bit field
-	lmask            = (limb(1) << lbits) - 1 // masking to 0
+	lbits            = 28                       // bit field
+	lmask            = ((limb(1) << lbits) - 1) // masking to 0
 )
 
 // Copy copies n = y
@@ -16,6 +16,7 @@ func (n *bigNumber) decafCopy() *bigNumber {
 }
 
 // XXX refactor, compare with Karatzuba mul, document what this does
+// n = x * y
 func decafMul(n, x, y *bigNumber) *bigNumber {
 
 	// copy so x is not directly modified
@@ -23,8 +24,8 @@ func decafMul(n, x, y *bigNumber) *bigNumber {
 
 	for i := 0; i < Limbs; i++ {
 		for j := 0; j < Limbs; j++ {
-			n[(i+j)%Limbs] += y[i] * xx[j]
-			xx[(Limbs-1-i)^(Limbs/2)] += xx[Limbs-1-i]
+			n[(i+j)%Limbs] += y[i] * xx[j]             // multiply and assing in one value
+			xx[(Limbs-1-i)^(Limbs/2)] += xx[Limbs-1-i] // assinging zeros
 		}
 	}
 
@@ -33,11 +34,11 @@ func decafMul(n, x, y *bigNumber) *bigNumber {
 	n[Limbs-2] &= lmask // masked off
 	n[Limbs/2] += n[Limbs-1] >> lbits
 
-	// WHY?
+	// This is failing, I guess
 	for k := 0; k < Limbs; k++ {
 		if k != 0 {
-			n[k] += n[(k-1)%Limbs] >> lbits
-			n[(k-1)%Limbs] &= lmask
+			n[k] += n[k-1%Limbs] >> lbits
+			n[k-1%Limbs] &= lmask
 		} else {
 			n[k] += n[(k)%Limbs] >> lbits
 			n[(k)%Limbs] &= lmask
