@@ -3,6 +3,7 @@ package ed448
 //c = a * b
 func karatsubaMul(c, a, b *bigNumber) *bigNumber {
 	var aa, bb [8]uint64
+
 	for i := 0; i < 8; i++ {
 		aa[i] = uint64(a[i]) + uint64(a[i+8])
 		bb[i] = uint64(b[i]) + uint64(b[i+8])
@@ -12,6 +13,7 @@ func karatsubaMul(c, a, b *bigNumber) *bigNumber {
 
 	//j = 0
 	z2 = 0
+
 	z2 += uint64(a[0]) * uint64(b[0])
 	z1 += aa[0] * bb[0]
 	z1 -= z2
