@@ -8,6 +8,20 @@ type DecafSuite struct{}
 
 var _ = Suite(&DecafSuite{})
 
+func (s *DecafSuite) Test_DecafCopy(c *C) {
+
+	n := &bigNumber{
+		0xaf1b9c5, 0xe417cd7, 0x839a472, 0x43bcebc,
+		0x7dcf7e0, 0x726193c, 0x304a5bb, 0xf04e22e,
+		0x526f560, 0x44604e2, 0x54f3a45, 0x979c291,
+	}
+
+	a := n.copy()
+
+	c.Assert(a, DeepEquals, n)
+
+}
+
 func (s *DecafSuite) Test_DecafMul(c *C) {
 
 	x, _ := deserialize(serialized{
