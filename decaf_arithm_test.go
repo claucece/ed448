@@ -130,3 +130,17 @@ func (s *Ed448Suite) Test_DecafEq(c *C) {
 	c.Assert(decafEq(x, x), Equals, true)
 	c.Assert(decafEq(x, y), Equals, false)
 }
+
+func (s *Ed448Suite) Test_DecafAdd(c *C) {
+
+	n := &bigNumber{}
+
+	x, _ := deserialize(serialized{0x01})
+	y, _ := deserialize(serialized{0x01})
+
+	m, _ := deserialize(serialized{0x02})
+
+	n.decafAdd(x, y)
+
+	c.Assert(n, DeepEquals, m)
+}

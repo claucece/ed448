@@ -117,3 +117,10 @@ func decafEq(x, y *bigNumber) bool {
 	}
 	return ((dword_t(ret) - 1) >> 32) != 0
 }
+
+func (n *bigNumber) decafAdd(x, y *bigNumber) {
+	for i := uint(0); i < Limbs; i++ {
+		n[i] = x[i] + y[i]
+	}
+	n.decafWeakReduce()
+}
