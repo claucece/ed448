@@ -18,6 +18,12 @@ func (s *DecafSuite) Test_DecafCopy(c *C) {
 
 	a := n.copy()
 
+	//one := &bigNumber{0x01}
+	//for i := 0; i < len(n); i++ {
+	//	fmt.Println(n[i])
+	//}
+	//fmt.Println(one)
+
 	c.Assert(a, DeepEquals, n)
 
 }

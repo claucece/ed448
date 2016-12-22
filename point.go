@@ -25,6 +25,7 @@ func maskToBoolean(m uint32) bool {
 	return m == 0xffffffff
 }
 
+// XXX: change name of all methods var
 // NewPoint instantiates a new point in a suitable coordinate system.
 // The x and y coordinates must be affine coordinates in little-endian
 //XXX This should probably receive []byte{}
@@ -185,9 +186,9 @@ func (p *twNiels) copy() *twNiels {
 	}
 }
 
-func (nP *twNiels) conditionalNegate(neg word_t) {
-	nP.a.conditionalSwap(nP.b, neg)
-	nP.c = nP.c.conditionalNegate(neg)
+func (p *twNiels) conditionalNegate(neg word_t) {
+	p.a.conditionalSwap(p.b, neg)
+	p.c = p.c.conditionalNegate(neg)
 }
 
 func convertTwNielsToTwExtensible(dst *twExtensible, src *twNiels) {
@@ -217,9 +218,9 @@ func (p *twExtensible) addTwPNiels(a *twPNiels) *twExtensible {
 	return p.addTwNiels(a.n)
 }
 
-func (e *twExtensible) subTwPNiels(a *twPNiels) {
-	e.z.mulCopy(e.z, a.z)
-	e.subTwNiels(a.n)
+func (p *twExtensible) subTwPNiels(a *twPNiels) {
+	p.z.mulCopy(p.z, a.z)
+	p.subTwNiels(a.n)
 }
 
 func convertTwExtensibleToTwPNiels(dst *twPNiels, src *twExtensible) {
@@ -230,7 +231,7 @@ func convertTwExtensibleToTwPNiels(dst *twPNiels, src *twExtensible) {
 	dst.z.add(src.z, src.z)
 }
 
-func (a *twExtensible) twPNiels() *twPNiels {
+func (p *twExtensible) twPNiels() *twPNiels {
 	ret := &twPNiels{
 		n: &twNiels{
 			a: new(bigNumber),
@@ -240,7 +241,7 @@ func (a *twExtensible) twPNiels() *twPNiels {
 		z: new(bigNumber),
 	}
 
-	convertTwExtensibleToTwPNiels(ret, a)
+	convertTwExtensibleToTwPNiels(ret, p)
 	return ret
 }
 
@@ -392,20 +393,20 @@ func (p *twExtensible) addTwNiels(p2 *twNiels) *twExtensible {
 	return p
 }
 
-func (d *twExtensible) subTwNiels(e *twNiels) {
-	L1 := new(bigNumber).subxRaw(d.y, d.x)
+func (p *twExtensible) subTwNiels(e *twNiels) {
+	L1 := new(bigNumber).subxRaw(p.y, p.x)
 	L0 := new(bigNumber).mul(e.b, L1)
-	L1.addRaw(d.x, d.y)
-	d.y.mul(e.a, L1)
-	L1.mul(d.u, d.t)
-	d.x.mul(e.c, L1)
-	d.u.addRaw(L0, d.y)
-	d.t.subxRaw(d.y, L0)
-	d.y.addRaw(d.x, d.z)
-	L0.subxRaw(d.z, d.x)
-	d.z.mul(L0, d.y)
-	d.x.mul(d.y, d.t)
-	d.y.mul(L0, d.u)
+	L1.addRaw(p.x, p.y)
+	p.y.mul(e.a, L1)
+	L1.mul(p.u, p.t)
+	p.x.mul(e.c, L1)
+	p.u.addRaw(L0, p.y)
+	p.t.subxRaw(p.y, L0)
+	p.y.addRaw(p.x, p.z)
+	L0.subxRaw(p.z, p.x)
+	p.z.mul(L0, p.y)
+	p.x.mul(p.y, p.t)
+	p.y.mul(L0, p.u)
 }
 
 func (p *twExtensible) untwistAndDoubleAndSerialize() *bigNumber {
@@ -435,6 +436,62 @@ func (p *twExtensible) untwistAndDoubleAndSerialize() *bigNumber {
 	//l0 = l0.mul(l2, b)
 
 	return b.mul(l1, l3)
+}
+
+type pointT struct {
+	x, y, z, t *bigNumber
+}
+
+func hibit(x *bigNumber) word_t {
+	y := &bigNumber{}
+	y.add(x, x)
+	y.strongReduce()
+	return word_t(-(y[0] & 1))
+}
+
+// this is replacing untwistAndSerialize method and serialize
+// XXX: check and compare with strike' functions and fast_decaf
+func (p *pointT) encode(ser []byte) []byte {
+	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
+	a.mulW(p.y, uint64(1-(-39081)))
+	c.mul(a, p.t) // maybe b
+	a.mul(p.x, p.z)
+	d.sub(c, a) // s := |(u . (r . (aZ . X-d . Y . T) + Y ) /a|
+	a.add(p.z, p.y)
+	b.sub(p.z, p.y)
+	c.mul(b, a)
+	b.mulW(c, uint64(-(-39081)))
+	a.isr(b)                         // r := 1/sqrt((a-d) . (Z+X) . (Z-Y))
+	b.mulW(a, uint64(-(-36081)))     // u := (a - d) . r
+	c.mul(b, a)                      // u . r
+	a.mul(c, d)                      // (ur) . (aZT-dYT)
+	d.add(b, b)                      // 2u = -2au since a = -1
+	c.mul(d, p.z)                    // 2u . Z
+	b.conditionalNegate(^(hibit(c))) // u := -u if negative
+	//c.conditionalNegate(j ^ !(hibit(c))) // u := -u if negative
+	c.mul(b, p.y) // final y?
+	a.add(a, c)
+	a.conditionalNegate(hibit(a)) // a?
+
+	a.strongReduce()
+
+	k, bits := 0, 0
+
+	var buf word_t
+
+	for i := 0; i < Limbs; i++ {
+		buf |= word_t(a[i]) << uint(bits)
+
+		//for (bits += LBITS; (bits>=8 || i==DECAF_448_LIMBS-1) && k<DECAF_448_SER_BYTES; bits-=8, buf>>=8) {
+		//	            ser[k++]=buf;
+		//		            }
+
+		for bits += Radix; (bits >= 8 || i == Limbs-1) && k < 56; buf >>= 8 { // this is missing bit because Golang
+			ser[k] = byte(buf) //missing the '++' because Golang
+		}
+	}
+
+	return ser
 }
 
 //HP(X : Y : Z) = Affine(X/Z, Y/Z), Z ≠ 0
