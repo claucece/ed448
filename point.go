@@ -26,6 +26,7 @@ func maskToBoolean(m uint32) bool {
 }
 
 // XXX: change name of all methods var
+
 // NewPoint instantiates a new point in a suitable coordinate system.
 // The x and y coordinates must be affine coordinates in little-endian
 //XXX This should probably receive []byte{}
@@ -453,16 +454,16 @@ func hibit(x *bigNumber) word_t {
 // XXX: check and compare with strike' functions and fast_decaf
 func (p *pointT) encode(ser []byte) []byte {
 	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
-	a.mulW(p.y, uint64(1-(-39081)))
+	a.mulW(p.y, 1-(-39081))
 	c.mul(a, p.t) // maybe b
 	a.mul(p.x, p.z)
 	d.sub(c, a) // s := |(u . (r . (aZ . X-d . Y . T) + Y ) /a|
 	a.add(p.z, p.y)
 	b.sub(p.z, p.y)
 	c.mul(b, a)
-	b.mulW(c, uint64(-(-39081)))
+	b.mulW(c, (-(-39081)))
 	a.isr(b)                         // r := 1/sqrt((a-d) . (Z+X) . (Z-Y))
-	b.mulW(a, uint64(-(-36081)))     // u := (a - d) . r
+	b.mulW(a, (-(-36081)))           // u := (a - d) . r
 	c.mul(b, a)                      // u . r
 	a.mul(c, d)                      // (ur) . (aZT-dYT)
 	d.add(b, b)                      // 2u = -2au since a = -1
@@ -475,22 +476,19 @@ func (p *pointT) encode(ser []byte) []byte {
 
 	a.strongReduce()
 
-	k, bits := 0, 0
-
-	var buf word_t
+	var bits uint
+	var buf dword_t
 
 	for i := 0; i < Limbs; i++ {
-		buf |= word_t(a[i]) << uint(bits)
+		buf |= dword_t(a[i]) << bits
 
-		//for (bits += LBITS; (bits>=8 || i==DECAF_448_LIMBS-1) && k<DECAF_448_SER_BYTES; bits-=8, buf>>=8) {
-		//	            ser[k++]=buf;
-		//		            }
+		var k uint
 
-		for bits += Radix; (bits >= 8 || i == Limbs-1) && k < 56; buf >>= 8 { // this is missing bit because Golang
-			ser[k] = byte(buf) //missing the '++' because Golang
+		for bits += Radix; (bits >= 8 || i == Limbs-1) && k < 56; buf, bits = buf>>8, bits-8 {
+			k = k + 1          // refactor
+			ser[k] = byte(buf) // why is msb set to 0 as default?
 		}
 	}
-
 	return ser
 }
 
