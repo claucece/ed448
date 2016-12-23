@@ -79,8 +79,8 @@ func (s *Ed448Suite) TestMixedAddition(c *C) {
 }
 
 func (s *Ed448Suite) TestExtensibleUntwistAndDoubleAndSerialize(c *C) {
-	c.Skip("still checking")
 
+	c.Skip("not passing")
 	px, _ := hex.DecodeString("00289cbd9a309bb622ac42d19f65a08b7f85e6807f0be3938a2a124a06829358475ec58377f34ab32a89f12f2dc75f359d4c9b1878d30bbc")
 	py, _ := hex.DecodeString("d4bd92c627d6a6209d8f9a91b86038a181bacef18336550a01a80ca4697d168810b32fa92e97a1832b5785ebf7ec59385b1d4a5ce35e4c9b")
 	pz, _ := hex.DecodeString("a48a55e2c059ed9bf85c1c8728bddad01c8d10487f67d381bec8b362fa6172fbd55d030bd1e8dda14dd173a3e0cd7d1137eaeb008418d0cb")
@@ -97,6 +97,8 @@ func (s *Ed448Suite) TestExtensibleUntwistAndDoubleAndSerialize(c *C) {
 	exp := new(bigNumber).setBytes(b)
 
 	ser := p.desisogenize()
+
+	fmt.Println(ser)
 
 	c.Assert(ser.equals(exp), DeepEquals, exp)
 }

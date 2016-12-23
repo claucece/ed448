@@ -18,20 +18,12 @@ func (s *DecafSuite) Test_DecafCopy(c *C) {
 
 	a := n.copy()
 
-	//one := &bigNumber{0x01}
-	//for i := 0; i < len(n); i++ {
-	//	fmt.Println(n[i])
-	//}
-	//fmt.Println(one)
-
 	c.Assert(a, DeepEquals, n)
 
 }
 
-// not sure if failing or completely different to Karatsuba
 func (s *DecafSuite) Test_DecafMul(c *C) {
-
-	c.Skip("failing")
+	n := &bigNumber{}
 
 	x, _ := deserialize(serialized{
 		0xf5, 0x81, 0x74, 0xd5, 0x7a, 0x33, 0x72,
@@ -55,14 +47,20 @@ func (s *DecafSuite) Test_DecafMul(c *C) {
 		0x72, 0x33, 0x7a, 0xd5, 0x74, 0x81, 0xf5,
 	})
 
-	// this is not the same result as the one in Karatzuba
-	n := &bigNumber{}
-	m := &bigNumber{}
+	z, _ := deserialize(serialized{
+		0x11, 0x95, 0x9c, 0x2e, 0x91, 0x78, 0x6f,
+		0xec, 0xff, 0x37, 0xe5, 0x8e, 0x2b, 0x50,
+		0x9e, 0xf8, 0xfb, 0x41, 0x08, 0xc4, 0xa7,
+		0x02, 0x1c, 0xbf, 0x5a, 0x9f, 0x18, 0xa7,
+		0xec, 0x32, 0x65, 0x7e, 0xed, 0xdc, 0x81,
+		0x81, 0x80, 0xa8, 0x4c, 0xdd, 0x95, 0x14,
+		0xe6, 0x67, 0x26, 0xd3, 0xa1, 0x22, 0xdb,
+		0xb3, 0x9f, 0x17, 0x7a, 0x85, 0x16, 0x6c,
+	})
 
-	n.decafMul(y, x)
-	m.decafMul(x, y)
+	n.decafMul(x, y)
 
-	c.Assert(n, DeepEquals, m)
+	c.Assert(n, DeepEquals, z)
 }
 
 func (s *DecafSuite) Test_DecafSub(c *C) {
@@ -147,6 +145,20 @@ func (s *Ed448Suite) Test_DecafAdd(c *C) {
 	m, _ := deserialize(serialized{0x02})
 
 	n.decafAdd(x, y)
+
+	c.Assert(n, DeepEquals, m)
+}
+
+func (s *DecafSuite) Test_DecafMulw(c *C) {
+	c.Skip("interfering")
+	n := &bigNumber{}
+
+	x, _ := deserialize(serialized{0x03})
+	y := int64(4)
+
+	m, _ := deserialize(serialized{0x0c})
+
+	n.decafMulW(x, y)
 
 	c.Assert(n, DeepEquals, m)
 }

@@ -28,8 +28,9 @@ func (n *bigNumber) decafMul(x, y *bigNumber) {
 	c := make([]dword_t, Limbs)
 
 	for i := uint(0); i < Limbs; i++ {
+
 		for j := uint(0); j < Limbs; j++ {
-			c[(i+j)%Limbs] += dword_t(y[i] * xx[j])
+			c[(i+j)%Limbs] += dword_t(y[i]) * dword_t(xx[j])
 		} // multiply and assigning in one value
 		xx[(Limbs-1-i)^(Limbs/2)] += xx[Limbs-1-i] // assigning zeros
 	}
