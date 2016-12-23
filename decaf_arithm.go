@@ -17,7 +17,7 @@ func (n *bigNumber) decafCopy() *bigNumber {
 	return c
 }
 
-//failing
+//failing: consts?
 // XXX refactor, compare with Karatzuba mul, document what this does
 // n = x * y
 func (n *bigNumber) decafMul(x, y *bigNumber) {
@@ -46,6 +46,18 @@ func (n *bigNumber) decafMul(x, y *bigNumber) {
 
 	for l := uint(0); l < Limbs; l++ {
 		n[l] = limb(c[l])
+	}
+}
+
+func (n *bigNumber) decafMulW(x *bigNumber, y int64) {
+	if y > 0 {
+		yy := &bigNumber{limb(y)}
+		n.decafMul(x, yy)
+	} else {
+		zz := &bigNumber{limb(-y)}
+		n.decafMul(x, zz)
+		zero := &bigNumber{0}
+		n.decafSub(zero, n)
 	}
 }
 

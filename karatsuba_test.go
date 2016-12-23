@@ -40,5 +40,6 @@ func (s *Ed448Suite) TestKaratsuba(c *C) {
 
 	result := new(bigNumber)
 	karatsubaMul(result, x, y)
+
 	c.Assert(result, DeepEquals, z)
 }
