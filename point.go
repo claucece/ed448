@@ -452,44 +452,31 @@ func hibit(x *bigNumber) word_t {
 
 // this is replacing untwistAndSerialize method and serialize
 // XXX: check and compare with strike' functions and fast_decaf
-func (p *pointT) encode(ser []byte) []byte {
+// xxx: add sub is the same
+// xxx : mul and mulW are not the same --> check
+func (p *pointT) desisogenize() *bigNumber {
 	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
-	a.mulW(p.y, 1-(-39081))
-	c.mul(a, p.t) // maybe b
-	a.mul(p.x, p.z)
-	d.sub(c, a) // s := |(u . (r . (aZ . X-d . Y . T) + Y ) /a|
-	a.add(p.z, p.y)
-	b.sub(p.z, p.y)
-	c.mul(b, a)
-	b.mulW(c, (-(-39081)))
+	a.decafMulW(p.y, 1-(-39081))
+	c.decafMul(a, p.t) // maybe b
+	a.decafMul(p.x, p.z)
+	d.decafSub(c, a) // s := |(u . (r . (aZ . X-d . Y . T) + Y ) /a|
+	a.decafAdd(p.z, p.y)
+	b.decafSub(p.z, p.y)
+	c.decafMul(b, a)
+	b.decafMulW(c, (-(-39081)))
 	a.isr(b)                         // r := 1/sqrt((a-d) . (Z+X) . (Z-Y))
-	b.mulW(a, (-(-36081)))           // u := (a - d) . r
-	c.mul(b, a)                      // u . r
-	a.mul(c, d)                      // (ur) . (aZT-dYT)
-	d.add(b, b)                      // 2u = -2au since a = -1
-	c.mul(d, p.z)                    // 2u . Z
+	b.decafMulW(a, (-(-36081)))      // u := (a - d) . r
+	c.decafMul(b, a)                 // u . r
+	a.decafMul(c, d)                 // (ur) . (aZT-dYT)
+	d.decafAdd(b, b)                 // 2u = -2au since a = -1
+	c.decafMul(d, p.z)               // 2u . Z
 	b.conditionalNegate(^(hibit(c))) // u := -u if negative
-	//c.conditionalNegate(j ^ !(hibit(c))) // u := -u if negative
-	c.mul(b, p.y) // final y?
-	a.add(a, c)
+	c.decafMul(b, p.y)               // final y?
+	a.decafAdd(a, c)
 	a.conditionalNegate(hibit(a)) // a?
 
-	a.strongReduce()
+	return a
 
-	var bits uint
-	var buf dword_t
-
-	for i := 0; i < Limbs; i++ {
-		buf |= dword_t(a[i]) << bits
-
-		var k uint
-
-		for bits += Radix; (bits >= 8 || i == Limbs-1) && k < 56; buf, bits = buf>>8, bits-8 {
-			k = k + 1          // refactor
-			ser[k] = byte(buf) // why is msb set to 0 as default?
-		}
-	}
-	return ser
 }
 
 //HP(X : Y : Z) = Affine(X/Z, Y/Z), Z ≠ 0
