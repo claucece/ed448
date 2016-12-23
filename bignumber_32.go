@@ -1,7 +1,9 @@
 package ed448
 
 const (
-	Limbs     = 16
+	// Limbs is number of limbs
+	Limbs = 16
+	// Radix is the lbit
 	Radix     = 28
 	radixMask = limb(0xfffffff)
 )
@@ -40,11 +42,12 @@ func serialize(dst []byte, n *bigNumber) {
 			l >>= 8
 		}
 	}
+
 }
 
 func (n *bigNumber) bias(b uint32) *bigNumber {
-	var co1 limb = radixMask * limb(b)
-	var co2 limb = co1 - limb(b)
+	var co1 = radixMask * limb(b)
+	var co2 = co1 - limb(b)
 	lo := [4]limb{co1, co1, co1, co1}
 	hi := [4]limb{co2, co1, co1, co1}
 
