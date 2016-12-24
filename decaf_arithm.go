@@ -55,17 +55,17 @@ func (n *bigNumber) decafSqr(x *bigNumber) {
 func step(n, x, y *bigNumber, i int64) {
 	x.decafMul(y, n)
 	n = x.decafCopy()
-	for j := 0; j < i; j++ {
+	for j := int64(0); j < i; j++ {
 		n.decafSqr(n)
 	}
 }
 
-func (n *bigNumber) decafIsr(y *bigNumber) {
-	a, b, c := &bigNumber{}, &bigNumber{}, &bigNumber{}
-	c.decafSqr(y)
-	step(c, b, y, 1)
-	y.decafMul(a, c)
-}
+//func (n *bigNumber) decafIsr(y *bigNumber) {
+//	a, b, c := &bigNumber{}, &bigNumber{}, &bigNumber{}
+//	c.decafSqr(y)
+//	step(c, b, y, 1)
+//	y.decafMul(a, c)
+//}
 
 func (n *bigNumber) decafMulW(x *bigNumber, y int64) {
 	if y > 0 {
