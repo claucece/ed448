@@ -63,6 +63,31 @@ func (s *DecafSuite) Test_DecafMul(c *C) {
 	c.Assert(n, DeepEquals, z)
 }
 
+func (s *DecafSuite) Test_DecafSqr(c *C) {
+	n := &bigNumber{}
+
+	x, _ := deserialize(serialized{0x08, 0xfd})
+
+	m, _ := deserialize(serialized{0x40, 0xd0, 0x18, 0xfa})
+
+	n.decafSqr(x)
+
+	c.Assert(n, DeepEquals, m)
+}
+
+func (s *DecafSuite) Test_DecafMulW(c *C) {
+	n := &bigNumber{}
+
+	x, _ := deserialize(serialized{0xf5, 0x81, 0x74})
+	y := int64(12363892)
+
+	m, _ := deserialize(serialized{0x4, 0xab, 0xff, 0x19, 0xdc, 0x55})
+
+	n.decafMulW(x, y)
+
+	c.Assert(n, DeepEquals, m)
+}
+
 func (s *DecafSuite) Test_DecafSub(c *C) {
 	x, _ := deserialize(serialized{
 		0xf5, 0x81, 0x74, 0xd5, 0x7a, 0x33, 0x72,

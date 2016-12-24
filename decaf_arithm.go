@@ -17,8 +17,6 @@ func (n *bigNumber) decafCopy() *bigNumber {
 	return c
 }
 
-//failing: consts?
-// XXX refactor, compare with Karatzuba mul, document what this does
 // n = x * y
 func (n *bigNumber) decafMul(x, y *bigNumber) {
 
@@ -50,6 +48,25 @@ func (n *bigNumber) decafMul(x, y *bigNumber) {
 	}
 }
 
+func (n *bigNumber) decafSqr(x *bigNumber) {
+	n.decafMul(x, x)
+}
+
+func step(n, x, y *bigNumber, i int64) {
+	x.decafMul(y, n)
+	n = x.decafCopy()
+	for j := 0; j < i; j++ {
+		n.decafSqr(n)
+	}
+}
+
+func (n *bigNumber) decafIsr(y *bigNumber) {
+	a, b, c := &bigNumber{}, &bigNumber{}, &bigNumber{}
+	c.decafSqr(y)
+	step(c, b, y, 1)
+	y.decafMul(a, c)
+}
+
 func (n *bigNumber) decafMulW(x *bigNumber, y int64) {
 	if y > 0 {
 		yy := &bigNumber{limb(y)}
@@ -62,13 +79,6 @@ func (n *bigNumber) decafMulW(x *bigNumber, y int64) {
 	}
 }
 
-// XXX this should be just twice mul
-func (n *bigNumber) decafSqr(x *bigNumber, y uint) *bigNumber {
-	sqr := n.squareN(x, y)
-	return sqr
-}
-
-// working
 // Weak reduce mod p
 func (n *bigNumber) decafWeakReduce() {
 	n[Limbs/2] += n[Limbs-1] >> Radix
