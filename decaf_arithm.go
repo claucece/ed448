@@ -40,20 +40,30 @@ func (n *bigNumber) decafSqr(x *bigNumber) {
 	n.decafMul(x, x)
 }
 
-func step(n, x, y *bigNumber, i int64) {
-	x.decafMul(y, n)
-	n = x.decafCopy()
-	for j := int64(0); j < i; j++ {
-		n.decafSqr(n)
+func step(c, s, m *bigNumber, n int64) {
+	s.decafMul(m, c)
+	c.copyFrom(s)
+	for i := int64(0); i < n; i++ {
+		c.decafSqr(c)
 	}
 }
 
-//func (n *bigNumber) decafIsr(y *bigNumber) {
-//	a, b, c := &bigNumber{}, &bigNumber{}, &bigNumber{}
-//	c.decafSqr(y)
-//	step(c, b, y, 1)
-//	y.decafMul(a, c)
-//}
+func (n *bigNumber) decafIsqrt(x *bigNumber) {
+	a, b, c := &bigNumber{}, &bigNumber{}, &bigNumber{}
+	c.decafSqr(x)
+	step(c, b, x, 1)
+	step(c, b, x, 3)
+	step(c, a, b, 3)
+	step(c, a, b, 9)
+	step(c, b, a, 1)
+	step(c, a, x, 18)
+	step(c, a, b, 37)
+	step(c, b, a, 37)
+	step(c, b, a, 111)
+	step(c, a, b, 1)
+	step(c, b, x, 223)
+	n.decafMul(a, c)
+}
 
 func (n *bigNumber) decafMulW(x *bigNumber, y int64) {
 	if y > 0 {
