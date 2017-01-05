@@ -1,8 +1,7 @@
 package ed448
 
 import (
-	_ "encoding/hex"
-
+	"encoding/hex"
 	. "gopkg.in/check.v1"
 )
 

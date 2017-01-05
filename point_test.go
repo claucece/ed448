@@ -124,6 +124,7 @@ func (s *Ed448Suite) TestConditionalNegate(c *C) {
 	x.conditionalNegate(0xffffffff)
 	c.Assert(x, DeepEquals, negN)
 }
+
 func (s *Ed448Suite) TestMontgomerySerialize(c *C) {
 	bs_in, _ := hex.DecodeString("d03786c1b949c8e1b6046c527542ff55e9acda5c6fe8c7fef9c499ad182e4d84701555454c3ed9d10ff7b95cc4dd94b29c519dc51c29e80e")
 	bs_z0, _ := hex.DecodeString("e281b05e4051a52b331430897d9d950529a46637d3ca1f45e1d2dc4fbd164c956f25dd0cf30458b4129e900faa2ba9b8d305dc4ae1e1b343")
