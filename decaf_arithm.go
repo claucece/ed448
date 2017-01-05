@@ -1,7 +1,6 @@
 package ed448
 
-// P is biggish num
-var P = []limb{radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask - 1, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask}
+var p = []limb{radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask - 1, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask}
 
 func (n *bigNumber) copyFrom(right *bigNumber) {
 	copy(n[:], right[:])
@@ -9,7 +8,6 @@ func (n *bigNumber) copyFrom(right *bigNumber) {
 
 // n = x * y
 func (n *bigNumber) decafMul(x, y *bigNumber) {
-
 	xx := x.copy()
 
 	c := make([]dword_t, Limbs)
@@ -26,13 +24,13 @@ func (n *bigNumber) decafMul(x, y *bigNumber) {
 	c[Limbs-2] &= dword_t(radixMask)
 	c[Limbs/2] += c[Limbs-1] >> Radix
 
-	for k := uint(0); k < Limbs; k++ {
-		c[k] += c[(k-1)%Limbs] >> Radix
-		c[(k-1)%Limbs] &= dword_t(radixMask)
+	for j := uint(0); j < Limbs; j++ {
+		c[j] += c[(j-1)%Limbs] >> Radix
+		c[(j-1)%Limbs] &= dword_t(radixMask)
 	}
 
-	for l := uint(0); l < Limbs; l++ {
-		n[l] = limb(c[l])
+	for k := uint(0); k < Limbs; k++ {
+		n[k] = limb(c[k])
 	}
 }
 
@@ -90,7 +88,7 @@ func (n *bigNumber) decafWeakReduce() {
 // n = x - y
 func (n *bigNumber) decafSub(x, y *bigNumber) {
 	for i := 0; i < Limbs; i++ {
-		n[i] = x[i] - y[i] + 2*P[i]
+		n[i] = x[i] - y[i] + 2*p[i]
 	}
 	n.decafWeakReduce()
 }
@@ -102,7 +100,7 @@ func (n *bigNumber) decafCanon() {
 	carry := int64(0)
 
 	for i := 0; i < Limbs; i++ {
-		carry += int64(n[i]) - int64(P[i])
+		carry += int64(n[i]) - int64(p[i])
 		n[i] = limb(carry) & radixMask
 		carry >>= Radix
 	}
@@ -111,7 +109,7 @@ func (n *bigNumber) decafCanon() {
 	carry = 0
 
 	for j := 0; j < Limbs; j++ {
-		carry += int64(n[j]) + (int64(P[j]) & addback)
+		carry += int64(n[j]) + (int64(p[j]) & addback)
 		n[j] = limb(carry) & radixMask
 		carry >>= Radix
 	}
