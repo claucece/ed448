@@ -137,3 +137,16 @@ func (n *bigNumber) decafAdd(x, y *bigNumber) {
 	}
 	n.decafWeakReduce()
 }
+
+// is neg? x : y
+func (n *bigNumber) decafCondSel(x, y *bigNumber, neg word_t) {
+	for i := uint(0); i < Limbs; i++ {
+		n[i] = (x[i] & limb(^neg)) | (y[i] & limb(neg))
+	}
+}
+
+func (n *bigNumber) decafCondNegate(neg word_t) {
+	y := &bigNumber{}
+	y.decafSub(&bigNumber{0}, n)
+	n.decafCondSel(n, y, neg)
+}
