@@ -84,3 +84,27 @@ func (s *Ed448Suite) TestSerialize(c *C) {
 	//0 because serialize reduces mod p
 	c.Assert(dst, DeepEquals, [56]byte{})
 }
+
+func (s *Ed448Suite) Test_DecafSerialize(c *C) {
+	dst := [56]byte{}
+
+	one := &bigNumber{0x01}
+	decafSerialize(dst[:], one)
+	c.Assert(dst, DeepEquals, [56]byte{1})
+
+	p := &bigNumber{
+		0xfffffff, 0xfffffff,
+		0xfffffff, 0xfffffff,
+		0xfffffff, 0xfffffff,
+		0xfffffff, 0xfffffff,
+		0xffffffe, 0xfffffff,
+		0xfffffff, 0xfffffff,
+		0xfffffff, 0xfffffff,
+		0xfffffff, 0xfffffff,
+	}
+
+	serialize(dst[:], p)
+
+	//0 because serialize reduces mod p
+	c.Assert(dst, DeepEquals, [56]byte{})
+}

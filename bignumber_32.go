@@ -31,20 +31,18 @@ func deserialize(in serialized) (n *bigNumber, ok bool) {
 }
 
 // this will replace serialize
-func encode(dst []byte, n *bigNumber) {
-	n.strongReduce()
+func decafSerialize(dst []byte, n *bigNumber) {
+	n.decafCanon()
 
 	var bits uint
 	var buf dword_t
+	var k int
 
 	for i := 0; i < Limbs; i++ {
 		buf |= dword_t(n[i]) << bits
 
-		var k uint
-
-		for bits += Radix; (bits >= 8 || i == Limbs-1) && k < 56; buf, bits = buf>>8, bits-8 {
+		for bits += Radix; (bits >= 8 || i == Limbs-1) && k < 56; buf, bits, k = buf>>8, bits-8, k+1 {
 			dst[k] = byte(buf) // why is msb set to 0 as default?
-			k++
 		}
 	}
 }
