@@ -1,27 +1,16 @@
 package ed448
 
-const (
-	// D is the non-square element of F_p
-	d                = -39081
-	montgomeryFactor = "3bd440fae918bc5ull"
-)
-
 // P is biggish num
 var P = []limb{radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask - 1, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask}
 
-// working
-// Copies n = y
-func (n *bigNumber) decafCopy() *bigNumber {
-	c := &bigNumber{}
-	copy(c[:], n[:])
-	return c
+func (n *bigNumber) copyFrom(right *bigNumber) {
+	copy(n[:], right[:])
 }
 
 // n = x * y
 func (n *bigNumber) decafMul(x, y *bigNumber) {
 
-	// copy so x is not directly modified
-	xx := x.decafCopy()
+	xx := x.copy()
 
 	c := make([]dword_t, Limbs)
 
