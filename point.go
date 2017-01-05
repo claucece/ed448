@@ -447,7 +447,7 @@ type pointT struct {
 func hibit(x *bigNumber) word_t {
 	y := &bigNumber{}
 	y.add(x, x)
-	y.strongReduce()
+	y.decafCanon()
 	return word_t(-(y[0] & 1))
 }
 
