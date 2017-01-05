@@ -18,13 +18,12 @@ func (n *bigNumber) decafMul(x, y *bigNumber) {
 
 		for j := uint(0); j < Limbs; j++ {
 			c[(i+j)%Limbs] += dword_t(y[i]) * dword_t(xx[j])
-		} // multiply and assigning in one value
-		xx[(Limbs-1-i)^(Limbs/2)] += xx[Limbs-1-i] // assigning zeros
+		}
+		xx[(Limbs-1-i)^(Limbs/2)] += xx[Limbs-1-i]
 	}
 
-	// shifting for mul
 	c[Limbs-1] += c[Limbs-2] >> Radix
-	c[Limbs-2] &= dword_t(radixMask) // masked off
+	c[Limbs-2] &= dword_t(radixMask)
 	c[Limbs/2] += c[Limbs-1] >> Radix
 
 	for k := uint(0); k < Limbs; k++ {
