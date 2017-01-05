@@ -86,46 +86,38 @@ func (n *bigNumber) decafWeakReduce() {
 	}
 }
 
-// working
 // Substract mod p
-// n = x = y
+// n = x - y
 func (n *bigNumber) decafSub(x, y *bigNumber) {
 	for i := 0; i < Limbs; i++ {
-		n[i] = x[i] - y[i] + 2*P[i] // maybe similar to bias?
+		n[i] = x[i] - y[i] + 2*P[i]
 	}
 	n.decafWeakReduce()
 }
 
-// XXX: check if working complety
 // Canonicalize, similar to strong reduce
 func (n *bigNumber) decafCanon() {
 	n.decafWeakReduce()
 
-	// substract p with borrow
+	carry := int64(0)
 
-	// XXX: use d_word_t instead of word_t?
-	var carry limb
-
-	// XXX: guess there is no need for uint.. for range?
-	for i := uint(0); i < Limbs; i++ {
-		carry = carry + n[i] - P[i]
-		n[i] &= carry & radixMask
+	for i := 0; i < Limbs; i++ {
+		carry += int64(n[i]) - int64(P[i])
+		n[i] = limb(carry) & radixMask
 		carry >>= Radix
 	}
 
 	addback := carry
 	carry = 0
 
-	// add it back
-	for j := uint(0); j < Limbs; j++ {
-		carry += carry + n[j] + (P[j] & addback)
-		n[j] = carry & radixMask
+	for j := 0; j < Limbs; j++ {
+		carry += int64(n[j]) + (int64(P[j]) & addback)
+		n[j] = limb(carry) & radixMask
 		carry >>= Radix
 	}
 }
 
-//working
-// compare a == b
+// compare x == y
 func decafEq(x, y *bigNumber) bool {
 	n := &bigNumber{}
 	n.decafSub(x, y)
