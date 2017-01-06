@@ -1,6 +1,14 @@
 package ed448
 
-var p = []limb{radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask - 1, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask}
+const (
+	//SerBytes is the number of bytes for serialization
+	SerBytes = 56
+	//D is the non-square element
+	D = -39
+)
+
+//P is a biggish number
+var P = []limb{radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask - 1, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask}
 
 func (n *bigNumber) copyFrom(right *bigNumber) {
 	copy(n[:], right[:])
@@ -88,7 +96,7 @@ func (n *bigNumber) decafWeakReduce() {
 // n = x - y
 func (n *bigNumber) decafSub(x, y *bigNumber) {
 	for i := 0; i < Limbs; i++ {
-		n[i] = x[i] - y[i] + 2*p[i]
+		n[i] = x[i] - y[i] + 2*P[i]
 	}
 	n.decafWeakReduce()
 }
@@ -100,7 +108,7 @@ func (n *bigNumber) decafCanon() {
 	carry := int64(0)
 
 	for i := 0; i < Limbs; i++ {
-		carry += int64(n[i]) - int64(p[i])
+		carry += int64(n[i]) - int64(P[i])
 		n[i] = limb(carry) & radixMask
 		carry >>= Radix
 	}
@@ -109,14 +117,14 @@ func (n *bigNumber) decafCanon() {
 	carry = 0
 
 	for j := 0; j < Limbs; j++ {
-		carry += int64(n[j]) + (int64(p[j]) & addback)
+		carry += int64(n[j]) + (int64(P[j]) & addback)
 		n[j] = limb(carry) & radixMask
 		carry >>= Radix
 	}
 }
 
 // compare x == y
-func decafEq(x, y *bigNumber) bool {
+func decafEq(x, y *bigNumber) dword_t {
 	n := &bigNumber{}
 	n.decafSub(x, y)
 	n.decafCanon()
@@ -126,7 +134,7 @@ func decafEq(x, y *bigNumber) bool {
 	for i := 0; i < Limbs; i++ {
 		ret |= n[i]
 	}
-	return ((dword_t(ret) - 1) >> 32) != 0
+	return ((dword_t(ret) - 1) >> 32)
 }
 
 func (n *bigNumber) decafAdd(x, y *bigNumber) {
@@ -147,4 +155,25 @@ func (n *bigNumber) decafCondNegate(neg word_t) {
 	y := &bigNumber{}
 	y.decafSub(&bigNumber{0}, n)
 	n.decafCondSel(n, y, neg)
+}
+
+// deserialize a bool
+func (n *bigNumber) decafDeser(in serialized) dword_t {
+	var k, bits uint
+	var buf dword_t
+
+	for i := uint(0); i < SerBytes; i++ {
+		buf |= dword_t(in[i]) << bits
+		for bits += 8; (bits >= Radix || i == SerBytes-1) && k < Limbs; k, bits, buf = k+1, bits-Radix, buf>>Radix {
+			n[k] = limb(buf) & radixMask
+		}
+	}
+
+	var accum dword_t
+
+	for i := 0; i < Limbs; i++ {
+		accum += dword_t(n[i]) - dword_t(P[i])>>wordBits
+	}
+
+	return accum
 }

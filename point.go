@@ -30,7 +30,6 @@ func maskToBoolean(m uint32) bool {
 // NewPoint instantiates a new point in a suitable coordinate system.
 // The x and y coordinates must be affine coordinates in little-endian
 //XXX This should probably receive []byte{}
-
 func NewPoint(x serialized, y serialized) (p *homogeneousProjective, e error) {
 	xN, ok1 := deserialize(x)
 	yN, ok2 := deserialize(y)
