@@ -78,29 +78,100 @@ func (s *Ed448Suite) TestMixedAddition(c *C) {
 	c.Assert(ret.equals(expected), Equals, true)
 }
 
-func (s *Ed448Suite) TestExtensibleUntwistAndDoubleAndSerialize(c *C) {
+func (s *Ed448Suite) TestDecafEncode(c *C) {
 
-	c.Skip("not passing")
-	px, _ := hex.DecodeString("00289cbd9a309bb622ac42d19f65a08b7f85e6807f0be3938a2a124a06829358475ec58377f34ab32a89f12f2dc75f359d4c9b1878d30bbc")
-	py, _ := hex.DecodeString("d4bd92c627d6a6209d8f9a91b86038a181bacef18336550a01a80ca4697d168810b32fa92e97a1832b5785ebf7ec59385b1d4a5ce35e4c9b")
-	pz, _ := hex.DecodeString("a48a55e2c059ed9bf85c1c8728bddad01c8d10487f67d381bec8b362fa6172fbd55d030bd1e8dda14dd173a3e0cd7d1137eaeb008418d0cb")
-	pt, _ := hex.DecodeString("0deca5ece390f7f1bdd2b2f49eb14a99c96440bb6a35d235886d3a76ccb0445f89d14b5c26d7bdfbf181dc1a6e09185fbab4191344f24b49")
+	px := &bigNumber{
+		0x0d9a309b, 0x000289cb,
+		0x02d19f65, 0x0b622ac4,
+		0x05e6807f, 0x0a08b7f8,
+		0x0a2a124a, 0x00be3938,
+		0x08475ec5, 0x00682935,
+		0x0ab32a89, 0x08377f34,
+		0x075f359d, 0x0f12f2dc,
+		0x08d30bbc, 0x04c9b187,
+	}
+
+	py := &bigNumber{
+		0x0627d6a6, 0x0d4bd92c,
+		0x0a91b860, 0x0209d8f9,
+		0x0acef183, 0x038a181b,
+		0x01a80ca4, 0x036550a0,
+		0x0810b32f, 0x0697d168,
+		0x01832b57, 0x0a92e97a,
+		0x0c59385b, 0x085ebf7e,
+		0x035e4c9b, 0x01d4a5ce,
+	}
+
+	pz := &bigNumber{
+		0x02c059ed, 0x0a48a55e,
+		0x0c8728bd, 0x09bf85c1,
+		0x0d10487f, 0x0dad01c8,
+		0x0ec8b362, 0x067d381b,
+		0x0bd55d03, 0x0fa6172f,
+		0x0da14dd1, 0x00bd1e8d,
+		0x0d7d1137, 0x073a3e0c,
+		0x0418d0cb, 0x0eaeb008,
+	}
+
+	pt := &bigNumber{
+		0x0ce390f7, 0x00deca5e,
+		0x02f49eb1, 0x0f1bdd2b,
+		0x0440bb6a, 0x04a99c96,
+		0x086d3a76, 0x035d2358,
+		0x0f89d14b, 0x0ccb0445,
+		0x0dfbf181, 0x05c26d7b,
+		0x09185fba, 0x0dc1a6e0,
+		0x04f24b49, 0x0b419134,
+	}
 
 	p := &pointT{
-		new(bigNumber).setBytes(px),
-		new(bigNumber).setBytes(py),
-		new(bigNumber).setBytes(pz),
-		new(bigNumber).setBytes(pt),
+		px,
+		py,
+		pz,
+		pt,
 	}
 
 	b, _ := hex.DecodeString("e4b2a1a14395b5eb3a5c3f3d265782efc28b9a94cc1d46fff8725079cee988d0955a3da9a2ef30abc30ef1bd947f48e093aad8405db1d268")
-	exp := new(bigNumber).setBytes(b)
 
-	ser := p.desisogenize()
+	ser := p.encode()
 
-	fmt.Println(ser)
+	dst := [56]byte{}
+	decafSerialize(dst[:], ser)
 
-	c.Assert(ser.equals(exp), DeepEquals, exp)
+	c.Assert(dst[:], DeepEquals, b)
+}
+
+func (s *Ed448Suite) TestDecafDecode(c *C) {
+	b, _ := hex.DecodeString("d03786c1b949c8e1b6046c527542ff55e9acda5c6fe8c7fef9c499ad182e4d84701555454c3ed9d10ff7b95cc4dd94b29c519dc51c29e80e")
+	n := new(bigNumber).setBytes(b)
+
+	ex, _ := hex.DecodeString("4d8b77dc973a1f9bcd5358c702ee8159a71cd3e4c1ff95bfb30e7038cffe9f794211dffd758e2a2a693a08a9a454398fde981e5e2669acad")
+	ey, _ := hex.DecodeString("27193fda68a08730d1def89d64c7f466d9e3d0ac89d8fdcd17b8cdb446e80404e8cd715d4612c16f70803d50854b66c9b3412e85e2f19b0d")
+	ez, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")
+	et, _ := hex.DecodeString("4d8b77dc973a1f9bcd5358c702ee8159a71cd3e4c1ff95bfb30e7038cffe9f794211dffd758e2a2a693a08a9a454398fde981e5e2669acad")
+	eu, _ := hex.DecodeString("27193fda68a08730d1def89d64c7f466d9e3d0ac89d8fdcd17b8cdb446e80404e8cd715d4612c16f70803d50854b66c9b3412e85e2f19b0d")
+	exp := &twExtensible{
+		new(bigNumber).setBytes(ex),
+		new(bigNumber).setBytes(ey),
+		new(bigNumber).setBytes(ez),
+		new(bigNumber).setBytes(et),
+		new(bigNumber).setBytes(eu),
+	}
+
+	tw, ok := n.deserializeAndTwistApprox()
+
+	c.Assert(tw.x.equals(exp.x), Equals, true)
+	c.Assert(tw.y.equals(exp.y), Equals, true)
+	c.Assert(tw.z.equals(exp.z), Equals, true)
+	c.Assert(tw.t.equals(exp.t), Equals, true)
+	c.Assert(tw.u.equals(exp.u), Equals, true)
+	c.Assert(ok, Equals, true)
+}
+
+func (s *Ed448Suite) TestHibit(c *C) {
+	x, _ := deserialize(serialized{0x12})
+
+	c.Assert(hibit(x), DeepEquals, word_t(0))
 }
 
 func (s *Ed448Suite) TestConditionalNegate(c *C) {

@@ -450,11 +450,8 @@ func hibit(x *bigNumber) word_t {
 	return word_t(-(y[0] & 1))
 }
 
-// this is replacing untwistAndSerialize method and serialize
-// XXX: check and compare with strike' functions and fast_decaf
-// xxx: add sub is the same
-// xxx : mul and mulW are not the same --> check
-func (p *pointT) desisogenize() *bigNumber {
+// this is replacing untwistAndSerialize method
+func (p *pointT) encode() *bigNumber {
 	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 	a.decafMulW(p.y, 1-(-39081))
 	c.decafMul(a, p.t) // maybe b
@@ -464,19 +461,50 @@ func (p *pointT) desisogenize() *bigNumber {
 	b.decafSub(p.z, p.y)
 	c.decafMul(b, a)
 	b.decafMulW(c, (-(-39081)))
-	a.isr(b)                         // r := 1/sqrt((a-d) . (Z+X) . (Z-Y))
-	b.decafMulW(a, (-(-36081)))      // u := (a - d) . r
-	c.decafMul(b, a)                 // u . r
-	a.decafMul(c, d)                 // (ur) . (aZT-dYT)
-	d.decafAdd(b, b)                 // 2u = -2au since a = -1
-	c.decafMul(d, p.z)               // 2u . Z
-	b.conditionalNegate(^(hibit(c))) // u := -u if negative
-	c.decafMul(b, p.y)               // final y?
+	a.decafIsqrt(b)                // r := 1/sqrt((a-d) . (Z+X) . (Z-Y))
+	b.decafMulW(a, (-(-39081)))    // u := (a - d) . r
+	c.decafMul(b, a)               // u . r
+	a.decafMul(c, d)               // (ur) . (aZT-dYT)
+	d.decafAdd(b, b)               // 2u = -2au since a = -1
+	c.decafMul(d, p.z)             // 2u . Z
+	b.decafCondNegate(^(hibit(c))) // u := -u if negative
+	c.decafMul(b, p.y)             // final y?
 	a.decafAdd(a, c)
-	a.conditionalNegate(hibit(a)) // a?
+	a.decafCondNegate(hibit(a))
 
 	return a
+}
 
+// this will replace deserializeAndTwistApprox()
+func (n *bigNumber) decode(ser serialized, identity word_t) (p *pointT, succ dword_t) {
+	s, a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
+	p = new(pointT)
+	succ = s.decafDeser(ser)             // deserialize the ser into a bigNumber
+	zero := decafEq(s, &bigNumber{0x00}) // check if equal to zero
+	succ &= dword_t(identity) | ^zero
+	succ &= ^dword_t(hibit(s))
+	a.decafSqr(s)                         // s^2
+	p.z.decafSub(&bigNumber{0x01}, a)     // 1-s^2 := Z = 1 + a.s^2 since a = -1
+	b.decafSqr(p.z)                       // b = Z^2
+	c.decafMulW(a, 4-4*(-39091))          // s^2 . -4d
+	c.decafAdd(c, b)                      // u = Z^2 + c
+	b.decafMul(c, a)                      // u . s^2
+	d.decafIsqrt(b)                       // v <- 1 / sqrt(u . s^2)
+	e.decafSqr(d)                         // e ^ 2
+	a.decafMul(e, b)                      // s ^ 2 = e . u
+	a.decafAdd(a, &bigNumber{0x01})       // s^2 + 1
+	succ &= ^decafEq(a, &bigNumber{0x00}) // is square and non zero
+	b.decafMul(c, d)                      // u . v
+	d.decafCondNegate(hibit(b))           // check if u . v is negative. If so, -v
+	p.x.decafAdd(s, s)                    // 2 . s
+	c.decafMul(d, s)                      // v . s
+	b.decafSub(&bigNumber{0x02}, p.z)     // 2 - Z
+	a.decafMul(b, c)                      // w <- v . s . (2 - Z)
+	p.y.decafMul(a, p.z)                  // Y = w . Z
+	p.t.decafMul(p.x, a)                  // T = w . X // P <- (X:Y:Z:T)
+	p.y[0] -= limb(zero)                  // for s = 0
+
+	return
 }
 
 //HP(X : Y : Z) = Affine(X/Z, Y/Z), Z ≠ 0
