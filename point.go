@@ -475,18 +475,33 @@ func (p *pointT) encode() *bigNumber {
 	return a
 }
 
+// just for checking
+func printBig(s string, n *bigNumber) {
+	for _, i := range n {
+		fmt.Printf("%s %x\n", s, i)
+	}
+}
+
 // this will replace deserializeAndTwistApprox()
-func (n *bigNumber) decode(ser serialized, identity word_t) (p *pointT, succ dword_t) {
-	s, a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
-	p = new(pointT)
-	succ = s.decafDeser(ser)             // deserialize the ser into a bigNumber
-	zero := decafEq(s, &bigNumber{0x00}) // check if equal to zero
+// it is probably a good idea to divide this into ser and make this
+// a func of bigNumber
+func decode(ser serialized, identity word_t) (*pointT, dword_t) {
+	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
+	p := &pointT{
+		x: new(bigNumber),
+		y: new(bigNumber),
+		z: new(bigNumber),
+		t: new(bigNumber),
+	}
+
+	n, succ := decafDeser(ser)           // deserialize the ser into a bigNumber
+	zero := decafEq(n, &bigNumber{0x00}) // check if equal to zero
 	succ &= dword_t(identity) | ^zero
-	succ &= ^dword_t(hibit(s))
-	a.decafSqr(s)                         // s^2
+	succ &= ^dword_t(hibit(n))            //checked
+	a.decafSqr(n)                         // s^2
 	p.z.decafSub(&bigNumber{0x01}, a)     // 1-s^2 := Z = 1 + a.s^2 since a = -1
 	b.decafSqr(p.z)                       // b = Z^2
-	c.decafMulW(a, 4-4*(-39091))          // s^2 . -4d
+	c.decafMulW(a, 4-4*(-39081))          // s^2 . -4d
 	c.decafAdd(c, b)                      // u = Z^2 + c
 	b.decafMul(c, a)                      // u . s^2
 	d.decafIsqrt(b)                       // v <- 1 / sqrt(u . s^2)
@@ -496,15 +511,15 @@ func (n *bigNumber) decode(ser serialized, identity word_t) (p *pointT, succ dwo
 	succ &= ^decafEq(a, &bigNumber{0x00}) // is square and non zero
 	b.decafMul(c, d)                      // u . v
 	d.decafCondNegate(hibit(b))           // check if u . v is negative. If so, -v
-	p.x.decafAdd(s, s)                    // 2 . s
-	c.decafMul(d, s)                      // v . s
+	p.x.decafAdd(n, n)                    // 2 . s
+	c.decafMul(d, n)                      // v . s
 	b.decafSub(&bigNumber{0x02}, p.z)     // 2 - Z
 	a.decafMul(b, c)                      // w <- v . s . (2 - Z)
 	p.y.decafMul(a, p.z)                  // Y = w . Z
 	p.t.decafMul(p.x, a)                  // T = w . X // P <- (X:Y:Z:T)
 	p.y[0] -= limb(zero)                  // for s = 0
 
-	return
+	return p, succ
 }
 
 //HP(X : Y : Z) = Affine(X/Z, Y/Z), Z ≠ 0

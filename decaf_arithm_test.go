@@ -275,7 +275,7 @@ func (s *Ed448Suite) TestDecafDeserialize(c *C) {
 		0xd2, 0x75, 0x4b, 0x39, 0xbc, 0xa8, 0x74,
 	}
 
-	n.decafDeser(ser)
+	n, ok = decafDeser(ser)
 
 	c.Assert(n, DeepEquals, &bigNumber{
 		0x57481f5, 0x72337ad,
@@ -288,6 +288,8 @@ func (s *Ed448Suite) TestDecafDeserialize(c *C) {
 		0x94b75d2, 0x74a8bc3,
 	})
 
+	c.Assert(ok, DeepEquals, dword_t(0x8788c0e5))
+
 	ser = serialized{
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -299,7 +301,8 @@ func (s *Ed448Suite) TestDecafDeserialize(c *C) {
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 	}
 
-	n.decafDeser(ser)
+	n, ok = decafDeser(ser)
+
 	c.Assert(n, DeepEquals, &bigNumber{
 		0xfffffff, 0xfffffff,
 		0xfffffff, 0xfffffff,
@@ -310,4 +313,6 @@ func (s *Ed448Suite) TestDecafDeserialize(c *C) {
 		0xfffffff, 0xfffffff,
 		0xfffffff, 0xfffffff,
 	})
+
+	c.Assert(ok, DeepEquals, dword_t(0xffffffef))
 }

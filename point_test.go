@@ -141,31 +141,72 @@ func (s *Ed448Suite) TestDecafEncode(c *C) {
 	c.Assert(dst[:], DeepEquals, b)
 }
 
+// check bool val
 func (s *Ed448Suite) TestDecafDecode(c *C) {
-	b, _ := hex.DecodeString("d03786c1b949c8e1b6046c527542ff55e9acda5c6fe8c7fef9c499ad182e4d84701555454c3ed9d10ff7b95cc4dd94b29c519dc51c29e80e")
-	n := new(bigNumber).setBytes(b)
 
-	ex, _ := hex.DecodeString("4d8b77dc973a1f9bcd5358c702ee8159a71cd3e4c1ff95bfb30e7038cffe9f794211dffd758e2a2a693a08a9a454398fde981e5e2669acad")
-	ey, _ := hex.DecodeString("27193fda68a08730d1def89d64c7f466d9e3d0ac89d8fdcd17b8cdb446e80404e8cd715d4612c16f70803d50854b66c9b3412e85e2f19b0d")
-	ez, _ := hex.DecodeString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001")
-	et, _ := hex.DecodeString("4d8b77dc973a1f9bcd5358c702ee8159a71cd3e4c1ff95bfb30e7038cffe9f794211dffd758e2a2a693a08a9a454398fde981e5e2669acad")
-	eu, _ := hex.DecodeString("27193fda68a08730d1def89d64c7f466d9e3d0ac89d8fdcd17b8cdb446e80404e8cd715d4612c16f70803d50854b66c9b3412e85e2f19b0d")
-	exp := &twExtensible{
-		new(bigNumber).setBytes(ex),
-		new(bigNumber).setBytes(ey),
-		new(bigNumber).setBytes(ez),
-		new(bigNumber).setBytes(et),
-		new(bigNumber).setBytes(eu),
+	px := &bigNumber{
+		0x034365c8, 0x06b2a874,
+		0x0eb875d7, 0x0ae4c7a7,
+		0x0785df04, 0x09929351,
+		0x01fe8c3b, 0x0f2a0e5f,
+		0x0111d39c, 0x07ab52ba,
+		0x01df4552, 0x01d87566,
+		0x0f297be2, 0x027c090f,
+		0x0a81b155, 0x0d1a562b,
 	}
 
-	tw, ok := n.deserializeAndTwistApprox()
+	py := &bigNumber{
+		0x00da9708, 0x0e7d583e,
+		0x0dbcc099, 0x0d2dad89,
+		0x05a49ce4, 0x01cb4ddc,
+		0x0928d395, 0x0098d91d,
+		0x0bff16ce, 0x06f02f9a,
+		0x0ce27cc1, 0x0dab5783,
+		0x0b553d94, 0x03251a0c,
+		0x064d70fb, 0x07fe3a2f,
+	}
 
-	c.Assert(tw.x.equals(exp.x), Equals, true)
-	c.Assert(tw.y.equals(exp.y), Equals, true)
-	c.Assert(tw.z.equals(exp.z), Equals, true)
-	c.Assert(tw.t.equals(exp.t), Equals, true)
-	c.Assert(tw.u.equals(exp.u), Equals, true)
-	c.Assert(ok, Equals, true)
+	pz := &bigNumber{
+		0x0d5237cc, 0x0319d105,
+		0x02ab2df5, 0x022e9736,
+		0x0d79742f, 0x00688712,
+		0x012d3a65, 0x0ef4925e,
+		0x0bd0d260, 0x0832b532,
+		0x05faef27, 0x01ffe567,
+		0x0161ce73, 0x07bda0f5,
+		0x035d04f1, 0x0930f532,
+	}
+
+	pt := &bigNumber{
+		0x01f6cc27, 0x09be7b8a,
+		0x0226da79, 0x0f6202f1,
+		0x0e7264dc, 0x0d25aeb1,
+		0x06c81f07, 0x03c32cdc,
+		0x0923c854, 0x0cfc9865,
+		0x055b2fed, 0x05bdcc90,
+		0x01a99835, 0x0ea08056,
+		0x0abbf763, 0x03826c2f,
+	}
+
+	ser := serialized{
+		0xe4, 0xb2, 0xa1, 0xa1, 0x43, 0x95, 0xb5,
+		0xeb, 0x3a, 0x5c, 0x3f, 0x3d, 0x26, 0x57,
+		0x82, 0xef, 0xc2, 0x8b, 0x9a, 0x94, 0xcc,
+		0x1d, 0x46, 0xff, 0xf8, 0x72, 0x50, 0x79,
+		0xce, 0xe9, 0x88, 0xd0, 0x95, 0x5a, 0x3d,
+		0xa9, 0xa2, 0xef, 0x30, 0xab, 0xc3, 0x0e,
+		0xf1, 0xbd, 0x94, 0x7f, 0x48, 0xe0, 0x93,
+		0xaa, 0xd8, 0x40, 0x5d, 0xb1, 0xd2, 0x68}
+
+	identity := word_t(1)
+
+	point, ok := decode(ser, identity)
+
+	c.Assert(point.x, DeepEquals, px)
+	c.Assert(point.y, DeepEquals, py)
+	c.Assert(point.z, DeepEquals, pz)
+	c.Assert(point.t, DeepEquals, pt)
+	c.Assert(ok, Equals, dword_t(0x7dc56310))
 }
 
 func (s *Ed448Suite) TestHibit(c *C) {
