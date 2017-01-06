@@ -258,11 +258,11 @@ func (s *Ed448Suite) Test_DecafConditionalNegateNumber(c *C) {
 
 func (s *Ed448Suite) TestDecafDeserialize(c *C) {
 	ser := serialized{0x1}
-	n := &bigNumber{}
 
-	n.decafDeser(ser)
+	n, ok := decafDeser(ser)
 
 	c.Assert(n, DeepEquals, &bigNumber{0x01})
+	c.Assert(ok, DeepEquals, dword_t(1))
 
 	ser = serialized{
 		0xf5, 0x81, 0x74, 0xd5, 0x7a, 0x33, 0x72,

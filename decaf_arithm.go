@@ -7,6 +7,10 @@ const (
 	D = -39
 )
 
+//XXX: check var names and probably stop using word_t
+//XXX: add a faster implementation
+//XXX: check overall order
+
 //P is a biggish number
 var P = []limb{radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask - 1, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask, radixMask}
 
@@ -123,6 +127,9 @@ func (n *bigNumber) decafCanon() {
 	}
 }
 
+// XXX: this is one of the 3 func that decaf changes
+// move it to proper place
+// XXX: check the return value
 // compare x == y
 func decafEq(x, y *bigNumber) dword_t {
 	n := &bigNumber{}
@@ -157,8 +164,12 @@ func (n *bigNumber) decafCondNegate(neg word_t) {
 	n.decafCondSel(n, y, neg)
 }
 
-// deserialize a bool
-func (n *bigNumber) decafDeser(in serialized) dword_t {
+// XXX: move this to proper place and probably divide it in two functions
+// deserialize
+// XXX: check the accum return value
+func decafDeser(in serialized) (n *bigNumber, accum dword_t) {
+	n = &bigNumber{}
+
 	var k, bits uint
 	var buf dword_t
 
@@ -169,11 +180,9 @@ func (n *bigNumber) decafDeser(in serialized) dword_t {
 		}
 	}
 
-	var accum dword_t
-
 	for i := 0; i < Limbs; i++ {
 		accum += dword_t(n[i]) - dword_t(P[i])>>wordBits
 	}
 
-	return accum
+	return
 }
