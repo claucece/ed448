@@ -9,6 +9,7 @@ import (
 	. "gopkg.in/check.v1"
 )
 
+// XXX: replace underscores
 func (s *Ed448Suite) TestPoint(c *C) {
 	//Base point
 	gx := serialized{

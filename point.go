@@ -25,6 +25,8 @@ func maskToBoolean(m uint32) bool {
 	return m == 0xffffffff
 }
 
+// XXX: check name of method var
+
 // XXX: change name of all methods var
 
 // NewPoint instantiates a new point in a suitable coordinate system.
@@ -165,6 +167,7 @@ func newNielsPoint(a, b, c [56]byte) *twNiels {
 	}
 }
 
+// XXX: check if there is new equals
 func (p *twNiels) equals(p2 *twNiels) bool {
 	ok := true
 
@@ -439,6 +442,7 @@ func (p *twExtensible) untwistAndDoubleAndSerialize() *bigNumber {
 	return b.mul(l1, l3)
 }
 
+// XXX: new struct.. does this interfere with old one?
 type pointT struct {
 	x, y, z, t *bigNumber
 }
@@ -450,6 +454,7 @@ func hibit(x *bigNumber) word_t {
 	return word_t(-(y[0] & 1))
 }
 
+// XXX: make magic numbers into consts
 // this is replacing untwistAndSerialize method
 func (p *pointT) encode() *bigNumber {
 	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
