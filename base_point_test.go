@@ -4,6 +4,7 @@ import (
 	. "gopkg.in/check.v1"
 )
 
+// XXX: check decaf_encode_from_ec in sage
 func (s *Ed448Suite) TestBasePoint(c *C) {
 
 	c.Skip("not sure")
@@ -41,6 +42,13 @@ func (s *Ed448Suite) TestBasePoint(c *C) {
 	r := &bigNumber64{}
 	r2 := &bigNumber64{}
 	r3 := &bigNumber64{}
+	a := &bigNumber64{}
+	b := &bigNumber64{}
+	h := &bigNumber64{}
+	d := &bigNumber64{}
+	e := &bigNumber64{}
+	f := &bigNumber64{}
+	g := &bigNumber64{}
 
 	// pt * pz = xy
 	// px * py
@@ -56,7 +64,17 @@ func (s *Ed448Suite) TestBasePoint(c *C) {
 	// pt = xy/z
 	r3.decafMul64(pt, pz)
 
+	a.decafMul64(px, px)
+	b.decafMul64(py, py)
+	h.decafAdd64(a, b)
+
+	d.decafMul64(pz, pz)
+	e.decafMul64(pt, pt)
+	f.decafMulW64(e, -39081)
+	g.decafAdd64(d, f)
+
 	c.Assert(r, DeepEquals, pt)
 	c.Assert(r2, DeepEquals, py)
 	c.Assert(r3, DeepEquals, r)
+	c.Assert(h, DeepEquals, g)
 }
