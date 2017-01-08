@@ -1,5 +1,8 @@
 package ed448
 
+// XXX: this probably need a setBytes if I want to play with the hex
+// 0x297ea0ea2692ff1b4faff46098453a6a26adf733245f065c3c59d0709cecfa96147eaaf3932d94c63d96c170033f4ba0c7f0de840aed939f,
+// 0x13
 const (
 	lmask = (dword_t(1) << 56) - 1
 )
