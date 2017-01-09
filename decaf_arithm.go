@@ -3,8 +3,6 @@ package ed448
 const (
 	//SerBytes is the number of bytes for serialization
 	SerBytes = 56
-	//D is the non-square element
-	D = -39
 )
 
 //XXX: check var names and probably stop using word_t

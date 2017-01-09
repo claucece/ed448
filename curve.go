@@ -46,6 +46,10 @@ const (
 	// Decaf Parameters
 	decafScalarBytes         = 56
 	decafScalarOverkillBytes = decafScalarBytes + 8
+
+	// D is the non-square
+	// XXX: there is already an edCons
+	D = -39081
 )
 
 var (

@@ -8,7 +8,7 @@ import (
 var (
 	bigNumOne           = mustDeserialize(serialized{1})
 	bigNumTwo           = mustDeserialize(serialized{2})
-	curveDSigned        = int64(-39081)
+	curveDSigned        = int64(-39081) // repeating
 	twistedCurveDSigned = int64(-39082)
 	sqrtDminus1         = mustDeserialize(serialized{
 		0x46, 0x9f, 0x74, 0x36, 0x18, 0xe2, 0xd2, 0x79,
@@ -19,6 +19,12 @@ var (
 		0xac, 0xdc, 0x4a, 0x73, 0x48, 0x87, 0x3b, 0x44,
 		0x49, 0x7a, 0x5b, 0xb2, 0xc0, 0xc0, 0xfe, 0x12,
 	})
+	//Zero is a constant for the decaf equation
+	Zero = &bigNumber{0x00}
+	//One is a constant for the decaf equation
+	One = &bigNumber{0x01}
+	//Two is a constant for the decaf equation
+	Two = &bigNumber{0x02}
 )
 
 func maskToBoolean(m uint32) bool {
@@ -26,7 +32,6 @@ func maskToBoolean(m uint32) bool {
 }
 
 // XXX: check name of method var
-
 // XXX: change name of all methods var
 
 // NewPoint instantiates a new point in a suitable coordinate system.
@@ -458,16 +463,16 @@ func hibit(x *bigNumber) word_t {
 // this is replacing untwistAndSerialize method
 func (p *pointT) encode() *bigNumber {
 	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
-	a.decafMulW(p.y, 1-(-39081))
+	a.decafMulW(p.y, 1-(D))
 	c.decafMul(a, p.t) // maybe b
 	a.decafMul(p.x, p.z)
 	d.decafSub(c, a) // s := |(u . (r . (aZ . X-d . Y . T) + Y ) /a|
 	a.decafAdd(p.z, p.y)
 	b.decafSub(p.z, p.y)
 	c.decafMul(b, a)
-	b.decafMulW(c, (-(-39081)))
+	b.decafMulW(c, (-(D)))
 	a.decafIsqrt(b)                // r := 1/sqrt((a-d) . (Z+X) . (Z-Y))
-	b.decafMulW(a, (-(-39081)))    // u := (a - d) . r
+	b.decafMulW(a, (-(D)))         // u := (a - d) . r
 	c.decafMul(b, a)               // u . r
 	a.decafMul(c, d)               // (ur) . (aZT-dYT)
 	d.decafAdd(b, b)               // 2u = -2au since a = -1
@@ -501,29 +506,29 @@ func decode(ser serialized, identity word_t) (*pointT, dword_t) {
 
 	n, succ := decafDeser(ser) // deserialize the ser into a bigNumber
 	//fmt.Printf("%x", succ)
-	zero := decafEq(n, &bigNumber{0x00}) // check if equal to zero
+	zero := decafEq(n, Zero) // check if equal to zero
 	succ &= dword_t(identity) | ^zero
-	succ &= ^dword_t(hibit(n))            //checked
-	a.decafSqr(n)                         // s^2
-	p.z.decafSub(&bigNumber{0x01}, a)     // 1-s^2 := Z = 1 + a.s^2 since a = -1
-	b.decafSqr(p.z)                       // b = Z^2
-	c.decafMulW(a, 4-4*(-39081))          // s^2 . -4d
-	c.decafAdd(c, b)                      // u = Z^2 + c
-	b.decafMul(c, a)                      // u . s^2
-	d.decafIsqrt(b)                       // v <- 1 / sqrt(u . s^2)
-	e.decafSqr(d)                         // e ^ 2
-	a.decafMul(e, b)                      // s ^ 2 = e . u
-	a.decafAdd(a, &bigNumber{0x01})       // s^2 + 1
-	succ &= ^decafEq(a, &bigNumber{0x00}) // is square and non zero
-	b.decafMul(c, d)                      // u . v
-	d.decafCondNegate(hibit(b))           // check if u . v is negative. If so, -v
-	p.x.decafAdd(n, n)                    // 2 . s
-	c.decafMul(d, n)                      // v . s
-	b.decafSub(&bigNumber{0x02}, p.z)     // 2 - Z
-	a.decafMul(b, c)                      // w <- v . s . (2 - Z)
-	p.y.decafMul(a, p.z)                  // Y = w . Z
-	p.t.decafMul(p.x, a)                  // T = w . X // P <- (X:Y:Z:T)
-	p.y[0] -= limb(zero)                  // for s = 0
+	succ &= ^dword_t(hibit(n))  //checked
+	a.decafSqr(n)               // s^2
+	p.z.decafSub(One, a)        // 1-s^2 := Z = 1 + a.s^2 since a = -1
+	b.decafSqr(p.z)             // b = Z^2
+	c.decafMulW(a, 4-4*(D))     // s^2 . -4d
+	c.decafAdd(c, b)            // u = Z^2 + c
+	b.decafMul(c, a)            // u . s^2
+	d.decafIsqrt(b)             // v <- 1 / sqrt(u . s^2)
+	e.decafSqr(d)               // e ^ 2
+	a.decafMul(e, b)            // s ^ 2 = e . u
+	a.decafAdd(a, One)          // s^2 + 1
+	succ &= ^decafEq(a, Zero)   // is square and non zero
+	b.decafMul(c, d)            // u . v
+	d.decafCondNegate(hibit(b)) // check if u . v is negative. If so, -v
+	p.x.decafAdd(n, n)          // 2 . s
+	c.decafMul(d, n)            // v . s
+	b.decafSub(Two, p.z)        // 2 - Z
+	a.decafMul(b, c)            // w <- v . s . (2 - Z)
+	p.y.decafMul(a, p.z)        // Y = w . Z
+	p.t.decafMul(p.x, a)        // T = w . X // P <- (X:Y:Z:T)
+	p.y[0] -= limb(zero)        // for s = 0
 
 	return p, succ
 }
