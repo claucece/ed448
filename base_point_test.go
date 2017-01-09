@@ -1,6 +1,9 @@
 package ed448
 
 import (
+	"encoding/hex"
+	"fmt"
+
 	. "gopkg.in/check.v1"
 )
 
@@ -37,49 +40,42 @@ func (s *Ed448Suite) TestBasePoint(c *C) {
 		0x004388f55a0aa7ff, 0x00b4d9a785cf1a91,
 	}
 
-	//y1, _ := deserialize(serialized{0x13})
+	y1, _ := decafDeser64(serialized{0x13})
+	x1, _ := hex.DecodeString("297ea0ea2692ff1b4faff46098453a6a26adf733245f065c3c59d0709cecfa96147eaaf3932d94c63d96c170033f4ba0c7f0de840aed939f")
 
-	y := &bigNumber64{0x00000000000000013}
+	x := new(bigNumber64).setBytes64(x1)
+	fmt.Println(x)
+	fmt.Println("the y", y1)
+	z, _ := decafDeser64(serialized{0x01})
+	fmt.Println("the z", z)
+
+	t1 := &bigNumber64{}
+	t := &bigNumber64{}
+
+	t1.decafMul64(x, y1)
+	t.decafMul64(t1, pz)
 
 	r := &bigNumber64{}
-	r2 := &bigNumber64{}
-	r3 := &bigNumber64{}
-	a := &bigNumber64{}
-	b := &bigNumber64{}
-	h := &bigNumber64{}
-	d := &bigNumber64{}
-	e := &bigNumber64{}
-	f := &bigNumber64{}
-	g := &bigNumber64{}
-	//q := &bigNumber64{}
+	r.decafMul64(px, py)
+	r.decafMul64(pz, pz)
 
+	dst := [56]byte{}
+	decafSerialize64(dst[:], px)
+
+	fmt.Println(dst[:])
 	// pt * pz = xy
 	// px * py
-	r.decafMul64(px, py)
 
 	// y * pz = py because of projective coordinates
 	// the Cartesian point (1, 2) can be represented
 	// in homogeneous coordinates as (1, 2, 1) or (2, 4, 2).
 	// The original Cartesian coordinates are recovered
 	// by dividing the first two positions by the third.
-	r2.decafMul64(y, pz)
 
 	// pt = xy/z
-	r3.decafMul64(pt, pz)
 
-	a.decafMul64(px, px)
-	b.decafMul64(py, py)
-	h.decafAdd64(a, b)
-
-	d.decafMul64(pz, pz)
-	e.decafMul64(pt, pt)
-	f.decafMulW64(e, -39081)
-	g.decafAdd64(d, f)
-
-	//q.decafMul64(pt, y1)
-
-	c.Assert(r, DeepEquals, pt)
-	c.Assert(r2, DeepEquals, py)
-	c.Assert(r3, DeepEquals, r)
-	c.Assert(h, DeepEquals, g)
+	c.Assert(t, DeepEquals, pt)
+	//c.Assert(r2, DeepEquals, py)
+	//c.Assert(r3, DeepEquals, r)
+	//c.Assert(h, DeepEquals, g)
 }

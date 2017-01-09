@@ -82,3 +82,81 @@ func (n *bigNumber64) decafMul64(x, y *bigNumber64) {
 		n[k] = c[k]
 	}
 }
+
+func (n *bigNumber64) decafCanon64() {
+	n.decafWeakReduce64()
+
+	carry := int64(0)
+
+	for i := 0; i < 8; i++ {
+		carry += int64(n[i]) - int64(P[i])
+		n[i] = dword_t(carry) & lmask
+		carry >>= 56
+	}
+
+	addback := carry
+	carry = 0
+
+	for j := 0; j < 8; j++ {
+		carry += int64(n[j]) + (int64(P[j]) & addback)
+		n[j] = dword_t(carry) & lmask
+		carry >>= 56
+	}
+}
+
+func decafDeser64(in serialized) (*bigNumber64, dword_t) {
+	n := &bigNumber64{}
+
+	var k, bits uint
+	var buf dword_t
+	var accum dword_t
+
+	for i := uint(0); i < 56; i++ {
+		buf |= dword_t(in[i]) << bits
+		for bits += 8; (bits >= 56 || i == 56-1) && k < 8; k, bits, buf = k+1, bits-56, buf>>56 {
+			n[k] = buf & lmask
+		}
+	}
+
+	for i := uint(0); i < 8; i++ {
+		accum += (n[i] - P64[i]) >> 64
+	}
+
+	return n, accum
+}
+
+func (n *bigNumber64) setBytes64(in []byte) *bigNumber64 {
+	if len(in) != 56 {
+		return nil
+	}
+
+	s := serialized{}
+	for i, si := range in {
+		s[len(s)-i-1] = si
+	}
+
+	d, _ := decafDeser64(s)
+
+	for i, di := range d {
+		n[i] = di
+	}
+
+	return n
+}
+
+// this will replace serialize
+func decafSerialize64(dst []byte, n *bigNumber64) {
+	n.decafCanon64()
+
+	var bits uint
+	var buf dword_t
+	var k int
+
+	for i := 0; i < 8; i++ {
+		buf |= n[i] << bits
+
+		for bits += 56; (bits >= 8 || i == 8-1) && k < 56; buf, bits, k = buf>>8, bits-8, k+1 {
+			dst[k] = byte(buf) // why is msb set to 0 as default?
+		}
+	}
+}
