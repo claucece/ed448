@@ -37,6 +37,8 @@ func (s *Ed448Suite) TestBasePoint(c *C) {
 		0x004388f55a0aa7ff, 0x00b4d9a785cf1a91,
 	}
 
+	//y1, _ := deserialize(serialized{0x13})
+
 	y := &bigNumber64{0x00000000000000013}
 
 	r := &bigNumber64{}
@@ -49,6 +51,7 @@ func (s *Ed448Suite) TestBasePoint(c *C) {
 	e := &bigNumber64{}
 	f := &bigNumber64{}
 	g := &bigNumber64{}
+	//q := &bigNumber64{}
 
 	// pt * pz = xy
 	// px * py
@@ -72,6 +75,8 @@ func (s *Ed448Suite) TestBasePoint(c *C) {
 	e.decafMul64(pt, pt)
 	f.decafMulW64(e, -39081)
 	g.decafAdd64(d, f)
+
+	//q.decafMul64(pt, y1)
 
 	c.Assert(r, DeepEquals, pt)
 	c.Assert(r2, DeepEquals, py)

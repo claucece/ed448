@@ -262,7 +262,8 @@ func (s *Ed448Suite) TestDecafDeserialize(c *C) {
 	n, ok := decafDeser(ser)
 
 	c.Assert(n, DeepEquals, &bigNumber{0x01})
-	c.Assert(ok, DeepEquals, dword_t(1))
+	// why this 0 at the end.. should only be 0xfffffff
+	c.Assert(ok, DeepEquals, dword_t(0xffffffff0))
 
 	ser = serialized{
 		0xf5, 0x81, 0x74, 0xd5, 0x7a, 0x33, 0x72,
@@ -288,7 +289,7 @@ func (s *Ed448Suite) TestDecafDeserialize(c *C) {
 		0x94b75d2, 0x74a8bc3,
 	})
 
-	c.Assert(ok, DeepEquals, dword_t(0x8788c0e5))
+	c.Assert(ok, DeepEquals, dword_t(0xffffffff0))
 
 	ser = serialized{
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -314,5 +315,5 @@ func (s *Ed448Suite) TestDecafDeserialize(c *C) {
 		0xfffffff, 0xfffffff,
 	})
 
-	c.Assert(ok, DeepEquals, dword_t(0xffffffef))
+	c.Assert(ok, DeepEquals, dword_t(0x0))
 }

@@ -166,12 +166,13 @@ func (n *bigNumber) decafCondNegate(neg word_t) {
 
 // XXX: move this to proper place and probably divide it in two functions
 // deserialize
-// XXX: check the accum return value
-func decafDeser(in serialized) (n *bigNumber, accum dword_t) {
-	n = &bigNumber{}
+// XXX: this is returning an extra 0
+func decafDeser(in serialized) (*bigNumber, dword_t) {
+	n := &bigNumber{}
 
 	var k, bits uint
 	var buf dword_t
+	var accum dword_t
 
 	for i := uint(0); i < SerBytes; i++ {
 		buf |= dword_t(in[i]) << bits
@@ -180,9 +181,9 @@ func decafDeser(in serialized) (n *bigNumber, accum dword_t) {
 		}
 	}
 
-	for i := 0; i < Limbs; i++ {
-		accum += dword_t(n[i]) - dword_t(P[i])>>wordBits
+	for i := uint(0); i < Limbs; i++ {
+		accum += (dword_t(n[i]) - dword_t(P[i])) >> wordBits
 	}
 
-	return
+	return n, accum
 }

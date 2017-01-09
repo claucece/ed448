@@ -499,7 +499,8 @@ func decode(ser serialized, identity word_t) (*pointT, dword_t) {
 		t: new(bigNumber),
 	}
 
-	n, succ := decafDeser(ser)           // deserialize the ser into a bigNumber
+	n, succ := decafDeser(ser) // deserialize the ser into a bigNumber
+	//fmt.Printf("%x", succ)
 	zero := decafEq(n, &bigNumber{0x00}) // check if equal to zero
 	succ &= dword_t(identity) | ^zero
 	succ &= ^dword_t(hibit(n))            //checked

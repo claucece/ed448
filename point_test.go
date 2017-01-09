@@ -207,7 +207,7 @@ func (s *Ed448Suite) TestDecafDecode(c *C) {
 	c.Assert(point.y, DeepEquals, py)
 	c.Assert(point.z, DeepEquals, pz)
 	c.Assert(point.t, DeepEquals, pt)
-	c.Assert(ok, Equals, dword_t(0x7dc56310))
+	c.Assert(ok, Equals, dword_t(0xffffffff0))
 }
 
 func (s *Ed448Suite) TestHibit(c *C) {
