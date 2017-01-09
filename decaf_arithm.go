@@ -149,6 +149,15 @@ func (n *bigNumber) decafAdd(x, y *bigNumber) {
 	n.decafWeakReduce()
 }
 
+func (n *bigNumber) decafCondSwap(x *bigNumber, swap word_t) {
+	for i := uint(0); i < Limbs; i++ {
+		s := n[i] ^ x[i]&limb(swap)
+		n[i] ^= s
+		x[i] ^= s
+	}
+
+}
+
 // is neg? x : y
 func (n *bigNumber) decafCondSel(x, y *bigNumber, neg word_t) {
 	for i := uint(0); i < Limbs; i++ {
