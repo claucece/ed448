@@ -41,3 +41,22 @@ func decafPointValidate(p *pointT) word_t {
 	out = ^decafEq(p.z, Zero)
 	return word_t(out)
 }
+
+//func MToE(x, y *bigNumber) (*bigNumber, *bigNumber) {
+//	s, t := &bigNumber{}, &bigNumber{}
+//	s.decafSqrt(x)
+
+//if s == 0 {
+//	t = 1
+//}
+//else {
+// t = y/s
+
+//    X,Y = 2*s / (1+s^2), (1-s^2) / t # This is phi_a(s, t) page 7
+//    if maybe(): X,Y = -X,-Y
+//    if maybe(): X,Y = Y,-X
+//    # OK, have point in ed
+//    return X,Y
+
+//	return s, t
+//}

@@ -25,6 +25,17 @@ def maybe(): return randint(0,1)
 def qpositive(x):
     return int(x) <= (2^255-19-1)/2
 
+def M_to_X(x, y):
+    s = sqrt(x)
+    if s == 0: t = 1
+    else: t = y/s
+
+    X,Y = 2*s / (1+s^2), (1-s^2) / t # This is phi_a(s, t) page 7
+    if maybe(): X,Y = -X,-Y
+    if maybe(): X,Y = Y,-X
+    # OK, have point in ed
+    return X,Y
+
 def M_to_E(P):
     # P must be even
     (x,y) = P.xy()
@@ -146,3 +157,8 @@ print("the Y", Y)
 print decaf_encode_from_E(X, Y)
 print M.base_ring()
 print M.weierstrass_p(prec=10)
+x = 117812161263436946737282484343310064665180535357016373416879082147939404277809514858788439644911793978499419995990477371552926308078495
+y = 19
+X1, Y1 = M_to_X(x, y)
+print("the x", X1)
+print("the y", Y1)

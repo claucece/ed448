@@ -105,7 +105,49 @@ func (s *Ed448Suite) Test_ValidateBasePoint(c *C) {
 	w.decafMul(px, py)
 	w1.decafMul(pz, pt)
 
+	gx, _ := decafDeser(serialized{
+		0x9f, 0x93, 0xed, 0x0a, 0x84, 0xde, 0xf0,
+		0xc7, 0xa0, 0x4b, 0x3f, 0x03, 0x70, 0xc1,
+		0x96, 0x3d, 0xc6, 0x94, 0x2d, 0x93, 0xf3,
+		0xaa, 0x7e, 0x14, 0x96, 0xfa, 0xec, 0x9c,
+		0x70, 0xd0, 0x59, 0x3c, 0x5c, 0x06, 0x5f,
+		0x24, 0x33, 0xf7, 0xad, 0x26, 0x6a, 0x3a,
+		0x45, 0x98, 0x60, 0xf4, 0xaf, 0x4f, 0x1b,
+		0xff, 0x92, 0x26, 0xea, 0xa0, 0x7e, 0x29,
+	})
+	//gy := serialized{0x13}
+
+	bigNumOne, _ := decafDeser(serialized{0x01})
+
+	l := &bigNumber{}
+
+	l.decafMul(gx, bigNumOne)
+
 	c.Assert(decafPointValidate(p), Equals, word_t(0xffffffff))
+	c.Assert(l, DeepEquals, px)
 	c.Assert(w, DeepEquals, w1)
 	c.Assert(a, DeepEquals, a1)
 }
+
+// this might work
+
+//
+
+//impl ProjectivePoint {
+/// Convert to the extended twisted Edwards representation of this
+/// point.
+///
+/// From §3 in [0]:
+///
+/// Given (X:Y:Z) in Ɛ, passing to Ɛₑ can be performed in 3M+1S by
+/// computing (XZ,YZ,XY,Z²).  (Note that in that paper, points are
+/// (X:Y:T:Z) so this really does match the code below).
+//    #[allow(dead_code)]  // rustc complains this is unused even when it's used
+//   fn to_extended(&self) -> ExtendedPoint {
+//        ExtendedPoint{
+//            X: &self.X * &self.Z,
+//            Y: &self.Y * &self.Z,
+//            Z: self.Z.square(),
+//            T: &self.X * &self.Y,
+//        }
+//    }
