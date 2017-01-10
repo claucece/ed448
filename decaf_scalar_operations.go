@@ -1,5 +1,19 @@
 package ed448
 
+type scalarT [scalarWords]word_t
+
+var (
+	scP = [scalarWords]word_t{
+		0x2378c292, 0xab5844f3,
+		0x216cc272, 0x8dc58f55,
+		0xc44edb49, 0xaed63690,
+		0xffffffff, 0x7cca23e9,
+		0xffffffff, 0xffffffff,
+		0xffffffff, 0xffffffff,
+		0x3fffffff, 0xffffffff,
+	}
+)
+
 // twisted edward formula
 func (p *pointT) decafPointAddSub(q, r *pointT, sub word_t) {
 	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
@@ -40,6 +54,45 @@ func decafPointValidate(p *pointT) word_t {
 	out = decafEq(a, b)
 	out = ^decafEq(p.z, Zero)
 	return word_t(out)
+}
+
+// for the fast
+// {extra,accum} - sub +? p
+// Must have extra <= 1
+///
+func scSubx(accum, sub, p [scalarWords]word_t, extra word_t) (out [scalarWords]word_t) {
+	var chain dword_t
+
+	for i := uint(0); i < scalarWords; i++ {
+		chain += dword_t(accum[i]) - dword_t(sub[i])
+		out[i] = word_t(chain)
+		chain >>= wordBits
+	}
+
+	borrow := word_t(chain) + extra
+
+	chain = 0
+
+	for i := uint(0); i < scalarWords; i++ {
+		chain += dword_t(out[i]) + dword_t(p[i])&dword_t(borrow)
+		out[i] = word_t(chain)
+		chain >>= wordBits
+	}
+
+	return out
+}
+
+//for the fast
+func scalarAdd(a, b [scalarWords]word_t) (out [scalarWords]word_t) {
+	var chain dword_t
+
+	for i := uint(0); i < Limbs; i++ {
+		chain += dword_t(a[i]) + dword_t(b[i])
+		out[i] = word_t(chain)
+		chain >>= wordBits
+	}
+
+	return scSubx(out, scP, scP, word_t(chain))
 }
 
 //func MToE(x, y *bigNumber) (*bigNumber, *bigNumber) {
