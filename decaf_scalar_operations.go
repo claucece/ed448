@@ -59,7 +59,7 @@ func decafPointValidate(p *pointT) word_t {
 // for the fast
 // {extra,accum} - sub +? p
 // Must have extra <= 1
-///
+// still not sure of this
 func scSubx(accum, sub, p [scalarWords]word_t, extra word_t) (out [scalarWords]word_t) {
 	var chain dword_t
 
@@ -69,12 +69,12 @@ func scSubx(accum, sub, p [scalarWords]word_t, extra word_t) (out [scalarWords]w
 		chain >>= wordBits
 	}
 
-	borrow := word_t(chain) + extra
+	borrow := word_t(chain) + extra // 0 or -1
 
 	chain = 0
 
 	for i := uint(0); i < scalarWords; i++ {
-		chain += dword_t(out[i]) + dword_t(p[i])&dword_t(borrow)
+		chain += (dword_t(out[i]) + dword_t(p[i])) & dword_t(borrow)
 		out[i] = word_t(chain)
 		chain >>= wordBits
 	}
@@ -86,13 +86,37 @@ func scSubx(accum, sub, p [scalarWords]word_t, extra word_t) (out [scalarWords]w
 func scalarAdd(a, b [scalarWords]word_t) (out [scalarWords]word_t) {
 	var chain dword_t
 
-	for i := uint(0); i < Limbs; i++ {
+	for i := uint(0); i < scalarWords; i++ {
 		chain += dword_t(a[i]) + dword_t(b[i])
 		out[i] = word_t(chain)
-		chain >>= wordBits
+		chain >>= wordBits // why it sets to zero?
 	}
 
 	return scSubx(out, scP, scP, word_t(chain))
+}
+
+func scalarSub(a, b [scalarWords]word_t) (out [scalarWords]word_t) {
+	return scSubx(a, b, scP, 0)
+}
+
+// a pretty uselesss func
+func scalarCopy(a [scalarWords]word_t) (out [scalarWords]word_t) {
+	out = a
+	return out
+}
+
+// failing
+func scalarAdjustment() [scalarWords]word_t {
+	var smadj [scalarWords]word_t
+	one := [scalarWords]word_t{
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+	}
+	smadj = scalarCopy(one)
+	for i := 0; i < 5*5*18; i++ {
+		smadj = scalarAdd(smadj, smadj)
+		smadj = scalarSub(smadj, one)
+	}
+	return smadj
 }
 
 //func MToE(x, y *bigNumber) (*bigNumber, *bigNumber) {

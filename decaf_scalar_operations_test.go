@@ -151,3 +151,25 @@ func (s *Ed448Suite) Test_ValidateBasePoint(c *C) {
 //            T: &self.X * &self.Y,
 //        }
 //    }
+
+func (s *Ed448Suite) Test_ScalarOperations(c *C) {
+	scalar1 := [scalarWords]word_t{
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+	}
+
+	scalar2 := [scalarWords]word_t{
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+	}
+
+	r := [scalarWords]word_t{
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	}
+
+	exp := scalarAdd(scalar1, scalar2)
+	sub := scalarSub(scalar1, scalar2)
+
+	// scalarAdjustment()
+
+	c.Assert(exp, DeepEquals, r)
+	c.Assert(sub, DeepEquals, r)
+}
