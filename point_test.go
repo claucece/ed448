@@ -140,6 +140,20 @@ func (s *Ed448Suite) TestDecafEncode(c *C) {
 	decafSerialize(dst[:], ser)
 
 	c.Assert(dst[:], DeepEquals, b)
+
+	pf := &pointT{
+		px,
+		py,
+		pz,
+		pt,
+	}
+
+	dstf := [56]byte{}
+
+	pf.fastEncode(dstf[:])
+
+	c.Assert(dstf[:], DeepEquals, b)
+
 }
 
 // check bool val

@@ -459,6 +459,41 @@ func hibit(x *bigNumber) word_t {
 	return word_t(-(y[0] & 1))
 }
 
+// encode from decafFast
+// only operation that changes is cond_neg
+// this is replacing untwistAndSerialize method
+func (p *pointT) deisogenize(s, c *bigNumber, t, overT word_t) *bigNumber {
+	b, d := &bigNumber{}, &bigNumber{}
+	a := s
+	a.mulWSignedCurveConstant(p.y, 1-(D))
+	c.mul(a, p.t) // maybe b
+	a.mul(p.x, p.z)
+	d.sub(c, a) // s := |(u . (r . (aZ . X-d . Y . T) + Y ) /a|
+	a.add(p.z, p.y)
+	b.sub(p.z, p.y)
+	c.mul(b, a)
+	b.mulWSignedCurveConstant(c, (-(D)))
+	a.isr(b)                                 // r := 1/sqrt((a-d) . (Z+X) . (Z-Y))
+	b.mulWSignedCurveConstant(a, (-(D)))     // u := (a - d) . r
+	c.mul(b, a)                              // u . r
+	a.mul(c, d)                              // (ur) . (aZT-dYT)
+	d.add(b, b)                              // 2u = -2au since a = -1
+	c.mul(d, p.z)                            // 2u . Z
+	b.decafCondNegate(overT ^ (^(hibit(c)))) // u := -u if negative
+	c.decafCondNegate(overT ^ (^(hibit(c)))) // u := -u if negative
+	d.mul(b, p.y)                            // final y?
+	s.add(a, d)
+	s.decafCondNegate(overT ^ hibit(s))
+
+	return s
+}
+
+func (p *pointT) fastEncode(dst []byte) {
+	s, overS := &bigNumber{}, &bigNumber{}
+	p.deisogenize(s, overS, 0, 0)
+	serialize(dst, s)
+}
+
 // XXX: make magic numbers into consts
 // this is replacing untwistAndSerialize method
 func (p *pointT) encode() *bigNumber {

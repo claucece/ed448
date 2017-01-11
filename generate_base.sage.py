@@ -30,7 +30,6 @@ def qpositive(x):
     return int(x) <= (_sage_const_2 **_sage_const_255 -_sage_const_19 -_sage_const_1 )/_sage_const_2 
 
 def M_to_X(x, y):
-    # P must be even
     s = sqrt(x)
     if s == _sage_const_0 : t = _sage_const_1 
     else: t = y/s
