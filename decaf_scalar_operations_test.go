@@ -153,23 +153,39 @@ func (s *Ed448Suite) Test_ValidateBasePoint(c *C) {
 //    }
 
 func (s *Ed448Suite) Test_ScalarOperations(c *C) {
+
 	scalar1 := [scalarWords]word_t{
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+		50, 0, 0, 0, 6, 0, 0, 3, 0, 0, 0, 2, 1, 1,
 	}
 
 	scalar2 := [scalarWords]word_t{
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+		5, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1,
 	}
 
-	r := [scalarWords]word_t{
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	subExp := [scalarWords]word_t{
+		45, 0, 0, 0, 6, 0, 0, 1, 0, 0, 0, 2, 1, 0,
 	}
 
-	exp := scalarAdd(scalar1, scalar2)
-	sub := scalarSub(scalar1, scalar2)
+	addExp := [scalarWords]word_t{
+		55, 0, 0, 0, 6, 0, 0, 5, 0, 0, 0, 2, 1, 2,
+	}
 
-	// scalarAdjustment()
+	added := scalarAdd(scalar1, scalar2)
+	subtracted := scalarSub(scalar1, scalar2)
 
-	c.Assert(exp, DeepEquals, r)
-	c.Assert(sub, DeepEquals, r)
+	c.Assert(added, DeepEquals, addExp)
+	c.Assert(subtracted, DeepEquals, subExp)
+}
+
+func (s *Ed448Suite) Test_GenerateConstant(c *C) {
+
+	c.Skip("In progress")
+	//constant := [scalarWords]word_t{
+	//	0x4a7bb0cf, 0xc873d6d5, 0x23a70aad, 0xe933d8d7, 0x129c96fd, 0xbb124b65, 0x335dc163,
+	//	0x00000008, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	//}
+
+	//scalar := scalarAdjustment()
+
+	//c.Assert(constant, DeepEquals, scalar)
 }
