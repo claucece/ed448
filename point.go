@@ -567,6 +567,43 @@ func decode(ser serialized, identity word_t) (*pointT, dword_t) {
 	return p, succ
 }
 
+func decodeFast(ser serialized, identity word_t) (*pointT, dword_t) {
+	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
+	p := &pointT{
+		x: new(bigNumber),
+		y: new(bigNumber),
+		z: new(bigNumber),
+		t: new(bigNumber),
+	}
+
+	n, succ := deserializeReturnMask(ser) // deserialize the ser into a bigNumber
+	zero := decafEq(n, Zero)              // check if equal to zero
+	succ &= identity | ^word_t(zero)
+	succ &= ^hibit(n)                     //checked
+	a.square(n)                           // s^2
+	p.z.sub(One, a)                       // 1-s^2 := Z = 1 + a.s^2 since a = -1
+	b.square(p.z)                         // b = Z^2
+	c.mulWSignedCurveConstant(a, 4-4*(D)) // s^2 . -4d
+	c.add(c, b)                           // u = Z^2 + c
+	b.mul(c, a)                           // u . s^2
+	d.isr(b)                              // v <- 1 / sqrt(u . s^2)
+	e.square(d)                           // e ^ 2
+	a.decafMul(e, b)                      // s ^ 2 = e . u
+	a.decafAdd(a, One)                    // s^2 + 1
+	succ &= ^word_t(decafEq(a, Zero))     // is square and non zero
+	b.mul(c, d)                           // u . v
+	d.decafCondNegate(hibit(b))           // check if u . v is negative. If so, -v
+	p.x.add(n, n)                         // 2 . s
+	c.mul(d, n)                           // v . s
+	b.sub(Two, p.z)                       // 2 - Z
+	a.mul(b, c)                           // w <- v . s . (2 - Z)
+	p.y.mul(a, p.z)                       // Y = w . Z
+	p.t.mul(p.x, a)                       // T = w . X // P <- (X:Y:Z:T)
+	p.y[0] -= limb(zero)                  // for s = 0
+
+	return p, dword_t(succ)
+}
+
 //HP(X : Y : Z) = Affine(X/Z, Y/Z), Z ≠ 0
 //XXX This can be replaced by extensible for simplicity if we neither use ADD
 //on the basePoint in test and benchmark (it is not used elsewhere)

@@ -222,6 +222,14 @@ func (s *Ed448Suite) TestDecafDecode(c *C) {
 	c.Assert(point.z, DeepEquals, pz)
 	c.Assert(point.t, DeepEquals, pt)
 	c.Assert(ok, Equals, dword_t(0xffffffff0))
+
+	fastPoint, fastOk := decodeFast(ser, identity)
+
+	c.Assert(fastPoint.x, DeepEquals, px)
+	c.Assert(fastPoint.y, DeepEquals, py)
+	c.Assert(fastPoint.z, DeepEquals, pz)
+	c.Assert(fastPoint.t, DeepEquals, pt)
+	c.Assert(fastOk, Equals, dword_t(0xffffffff))
 }
 
 func (s *Ed448Suite) TestHibit(c *C) {
