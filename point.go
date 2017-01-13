@@ -520,13 +520,6 @@ func (p *pointT) encode() *bigNumber {
 	return a
 }
 
-// just for checking
-func printBig(s string, n *bigNumber) {
-	for _, i := range n {
-		fmt.Printf("%s %x\n", s, i)
-	}
-}
-
 // this will replace deserializeAndTwistApprox()
 // it is probably a good idea to divide this into ser and make this
 // a func of bigNumber
@@ -576,30 +569,30 @@ func decodeFast(ser serialized, identity word_t) (*pointT, dword_t) {
 		t: new(bigNumber),
 	}
 
-	n, succ := deserializeReturnMask(ser) // deserialize the ser into a bigNumber
-	zero := decafEq(n, Zero)              // check if equal to zero
+	n, succ := deserializeReturnMask(ser)
+	zero := decafEq(n, Zero)
 	succ &= identity | ^word_t(zero)
-	succ &= ^hibit(n)                     //checked
-	a.square(n)                           // s^2
-	p.z.sub(One, a)                       // 1-s^2 := Z = 1 + a.s^2 since a = -1
-	b.square(p.z)                         // b = Z^2
-	c.mulWSignedCurveConstant(a, 4-4*(D)) // s^2 . -4d
-	c.add(c, b)                           // u = Z^2 + c
-	b.mul(c, a)                           // u . s^2
-	d.isr(b)                              // v <- 1 / sqrt(u . s^2)
-	e.square(d)                           // e ^ 2
-	a.decafMul(e, b)                      // s ^ 2 = e . u
-	a.decafAdd(a, One)                    // s^2 + 1
-	succ &= ^word_t(decafEq(a, Zero))     // is square and non zero
-	b.mul(c, d)                           // u . v
-	d.decafCondNegate(hibit(b))           // check if u . v is negative. If so, -v
-	p.x.add(n, n)                         // 2 . s
-	c.mul(d, n)                           // v . s
-	b.sub(Two, p.z)                       // 2 - Z
-	a.mul(b, c)                           // w <- v . s . (2 - Z)
-	p.y.mul(a, p.z)                       // Y = w . Z
-	p.t.mul(p.x, a)                       // T = w . X // P <- (X:Y:Z:T)
-	p.y[0] -= limb(zero)                  // for s = 0
+	succ &= ^hibit(n)
+	a.square(n)
+	p.z.sub(One, a)
+	b.square(p.z)
+	c.mulWSignedCurveConstant(a, 4-4*(D))
+	c.add(c, b)
+	b.mul(c, a)
+	d.isr(b)
+	e.square(d)
+	a.decafMul(e, b)
+	a.decafAdd(a, One)
+	succ &= ^word_t(decafEq(a, Zero))
+	b.mul(c, d)
+	d.decafCondNegate(hibit(b))
+	p.x.add(n, n)
+	c.mul(d, n)
+	b.sub(Two, p.z)
+	a.mul(b, c)
+	p.y.mul(a, p.z)
+	p.t.mul(p.x, a)
+	p.y[0] -= limb(zero)
 
 	return p, dword_t(succ)
 }

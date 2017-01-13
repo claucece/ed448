@@ -15,6 +15,8 @@ var (
 )
 
 // twisted edward formula
+// from the normal decaf
+// XXX: decide which one is going to be used
 func (p *pointT) decafPointAddSub(q, r *pointT, sub word_t) {
 	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 	b.decafSub(q.y, q.x)
@@ -39,26 +41,11 @@ func (p *pointT) decafPointAddSub(q, r *pointT, sub word_t) {
 	p.t.decafMul(b, c)
 }
 
-func decafPointValidate(p *pointT) word_t {
-	a, b, c := &bigNumber{}, &bigNumber{}, &bigNumber{}
-	a.decafMul(p.x, p.y)
-	b.decafMul(p.z, p.t)
-	out := decafEq(a, b)
-	a.decafSqr(p.x)
-	b.decafSqr(p.y)
-	a.decafSub(b, a)
-	b.decafSqr(p.t)
-	c.decafMulW(b, 1-D)
-	b.decafSqr(p.z)
-	b.decafSub(b, c)
-	out = decafEq(a, b)
-	out = ^decafEq(p.z, Zero)
-	return word_t(out)
-}
-
+// from now on this is decaf_fast
 // from decaf_fast
 // {extra,accum} - sub + p
 // Must have extra <= 1
+// XXX: check if this function is doing exactly the same as STRIKE one
 func scSubx(accum, sub, p [scalarWords]word_t, extra word_t) (out [scalarWords]word_t) {
 	var chain int64
 
@@ -79,7 +66,6 @@ func scSubx(accum, sub, p [scalarWords]word_t, extra word_t) (out [scalarWords]w
 	return out
 }
 
-//from decaf_fast
 func scalarAdd(a, b [scalarWords]word_t) (out [scalarWords]word_t) {
 	var chain dword_t
 

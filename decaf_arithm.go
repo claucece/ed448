@@ -6,7 +6,6 @@ const (
 )
 
 //XXX: check var names and probably stop using word_t
-//XXX: add a faster implementation
 //XXX: check overall order
 
 //P is a biggish number
