@@ -35,3 +35,11 @@ func decafPointValidate(p *pointT) word_t {
 
 //	return s, t
 //}
+
+// play with this
+//func (p *CompletedGroupElement) ToExtended(r *ExtendedGroupElement) {
+//	FeMul(&r.X, &p.X, &p.T)
+//	FeMul(&r.Y, &p.Y, &p.Z)
+//	FeMul(&r.Z, &p.Z, &p.T)
+//	FeMul(&r.T, &p.X, &p.Y)
+//}
