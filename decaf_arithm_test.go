@@ -2,6 +2,7 @@ package ed448
 
 import (
 	"encoding/hex"
+
 	. "gopkg.in/check.v1"
 )
 

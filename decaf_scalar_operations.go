@@ -120,7 +120,7 @@ func scalarAdjustment() [scalarWords]word_t {
 	return smadj
 }
 
-func (p *pointT) addNielsToProjective(p2 *twNiels) {
+func (p *pointT) addNielsToProjective(p2 *twNiels, beforeDouble bool) {
 	a, b, c := &bigNumber{}, &bigNumber{}, &bigNumber{}
 	b.sub(p.y, p.x)
 	a.mul(p2.a, b)
@@ -134,7 +134,9 @@ func (p *pointT) addNielsToProjective(p2 *twNiels) {
 	p.z.mul(a, p.y)
 	p.x.mul(p.y, b)
 	p.y.mul(a, c)
-	//p.t.mul(b, c) // needed after the double
+	if !beforeDouble {
+		p.t.mul(b, c)
+	}
 }
 
 func convertNielsToPt(dst *pointT, src *twNiels) {

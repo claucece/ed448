@@ -184,12 +184,233 @@ func (s *Ed448Suite) Test_AddNielsToProjective(c *C) {
 		expx, expy, expz, expt,
 	}
 
-	e.addNielsToProjective(n)
+	e.addNielsToProjective(n, true)
 
 	c.Assert(e.x, DeepEquals, exp.x)
 	c.Assert(e.y, DeepEquals, exp.y)
 	c.Assert(e.z, DeepEquals, exp.z)
 	c.Assert(e.t, DeepEquals, exp.t)
+}
+
+func (s *Ed448Suite) Test_AddNielsToProjective_BeforeDouble(c *C) {
+	nielsA := &bigNumber{0x068d5b74,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+	}
+
+	nielsB := &bigNumber{0x068d5b74,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+	}
+
+	nielsC := &bigNumber{0x068d5b74,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+	}
+
+	oldProjectiveX := &bigNumber{0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+	}
+
+	oldProjectiveY := &bigNumber{0x00000001,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+	}
+
+	oldProjectiveZ := &bigNumber{0x00000001,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+	}
+
+	oldProjectiveT := &bigNumber{0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+	}
+
+	newProjectiveX := &bigNumber{0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0ffffffe,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+	}
+
+	newProjectiveY := &bigNumber{0x0d1ab6e7,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+	}
+
+	newProjectiveZ := &bigNumber{0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+	}
+
+	newProjectiveT := &bigNumber{0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0ffffffe,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+		0x0fffffff,
+	}
+
+	niels := &twNiels{
+		nielsA,
+		nielsB,
+		nielsC,
+	}
+
+	oldProjective := &pointT{
+		oldProjectiveX, oldProjectiveY, oldProjectiveZ, oldProjectiveT,
+	}
+
+	newProjective := &pointT{
+		newProjectiveX, newProjectiveY, newProjectiveZ, newProjectiveT,
+	}
+
+	oldProjective.addNielsToProjective(niels, false)
+
+	c.Assert(oldProjective.x, DeepEquals, newProjective.x)
+	c.Assert(oldProjective.y, DeepEquals, newProjective.y)
+	c.Assert(oldProjective.z, DeepEquals, newProjective.z)
+	c.Assert(oldProjective.t, DeepEquals, newProjective.t)
 }
 
 func (s *Ed448Suite) Test_ConvertNielsToProjective(c *C) {
