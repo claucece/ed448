@@ -58,20 +58,20 @@ func (s *Ed448Suite) Test_ScalarAdditionAndSubtraction(c *C) {
 func (s *Ed448Suite) Test_ScalarHalve(c *C) {
 
 	scalar1 := [scalarWords]word_t{
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12,
 	}
 
 	scalar2 := [scalarWords]word_t{
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4,
 	}
 
-	exp := [scalarWords]word_t{
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3,
+	expected := [scalarWords]word_t{
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6,
 	}
 
-	halved := svHalve(scalar1, scalar2)
+	halved := scHalve(scalar1, scalar2)
 
-	c.Assert(halved, DeepEquals, exp)
+	c.Assert(halved, DeepEquals, expected)
 }
 
 func (s *Ed448Suite) Test_GenerateConstant(c *C) {

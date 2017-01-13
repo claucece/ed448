@@ -89,7 +89,7 @@ func scalarCopy(a [scalarWords]word_t) (out [scalarWords]word_t) {
 }
 
 //In Progress
-func svHalve(a, b [scalarWords]word_t) (out [scalarWords]word_t) {
+func scHalve(a, b [scalarWords]word_t) (out [scalarWords]word_t) {
 	mask := -(a[0] & 1)
 	var chain dword_t
 	var i uint
@@ -105,7 +105,8 @@ func svHalve(a, b [scalarWords]word_t) (out [scalarWords]word_t) {
 	}
 
 	out[i] = out[i]>>1 | word_t(chain<<(wordBits-1))
-	return b
+
+	return
 }
 
 //In Progress
