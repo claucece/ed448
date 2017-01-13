@@ -89,32 +89,57 @@ func scalarCopy(a [scalarWords]word_t) (out [scalarWords]word_t) {
 }
 
 //In Progress
-//func scalarAdjustment() [scalarWords]word_t {
-//	var smadj [scalarWords]word_t
-//	one := [scalarWords]word_t{0x01}
-//	smadj = scalarCopy(one)
-//	for i := uint(0); i < 8*4*14; i++ {
-//		smadj = scalarAdd(smadj, smadj)
-//	}
-//	smadj = scalarSub(smadj, one)
-//	return smadj
-//}
+func svHalve(a, b [scalarWords]word_t) (out [scalarWords]word_t) {
+	mask := -(a[0] & 1)
+	var chain dword_t
+	var i uint
 
-//func MToE(x, y *bigNumber) (*bigNumber, *bigNumber) {
-//	s, t := &bigNumber{}, &bigNumber{}
-//	s.decafSqrt(x)
+	for i = 0; i < scalarWords; i++ {
+		chain += dword_t(a[i]) + dword_t(b[i]&mask)
+		out[i] = word_t(chain)
+		chain >>= wordBits
+	}
 
-//if s == 0 {
-//	t = 1
-//}
-//else {
-// t = y/s
+	for i = 0; i < scalarWords-1; i++ {
+		out[i] = out[i]>>1 | out[i+1]<<(wordBits-1)
+	}
 
-//    X,Y = 2*s / (1+s^2), (1-s^2) / t # This is phi_a(s, t) page 7
-//    if maybe(): X,Y = -X,-Y
-//    if maybe(): X,Y = Y,-X
-//    # OK, have point in ed
-//    return X,Y
+	out[i] = out[i]>>1 | word_t(chain<<(wordBits-1))
+	return b
+}
 
-//	return s, t
-//}
+//In Progress
+func scalarAdjustment() [scalarWords]word_t {
+	var smadj [scalarWords]word_t
+	one := [scalarWords]word_t{0x01}
+	smadj = scalarCopy(one)
+	for i := uint(0); i < 8*4*14; i++ {
+		smadj = scalarAdd(smadj, smadj)
+	}
+	smadj = scalarSub(smadj, one)
+	return smadj
+}
+
+func (p *pointT) addNielsToProjective(p2 *twNiels) {
+	a, b, c := &bigNumber{}, &bigNumber{}, &bigNumber{}
+	b.sub(p.y, p.x)
+	a.mul(p2.a, b)
+	b.addRaw(p.x, p.y)
+	p.y.mul(p2.b, b)
+	p.x.mul(p2.c, p.t)
+	c.addRaw(a, p.y)
+	b.sub(p.y, a)
+	p.y.sub(p.z, p.x)
+	a.addRaw(p.x, p.z)
+	p.z.mul(a, p.y)
+	p.x.mul(p.y, b)
+	p.y.mul(a, c)
+	//p.t.mul(b, c) // needed after the double
+}
+
+func convertNielsToPt(dst *pointT, src *twNiels) {
+	dst.y.add(src.b, src.a)
+	dst.x.sub(src.b, src.a)
+	dst.t.mul(dst.y, dst.x)
+	dst.z.copyFrom(One)
+}
