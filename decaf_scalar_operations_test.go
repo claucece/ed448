@@ -26,6 +26,15 @@ func resetValues() {
 	}
 }
 
+func resetPoint(p *pointT) {
+	p = &pointT{
+		&bigNumber{},
+		&bigNumber{},
+		&bigNumber{},
+		&bigNumber{},
+	}
+}
+
 func (s *Ed448Suite) TearDownTest(c *C) {
 	resetValues()
 }
@@ -72,6 +81,124 @@ func (s *Ed448Suite) Test_ScalarHalve(c *C) {
 	halved := scHalve(scalar1, scalar2)
 
 	c.Assert(halved, DeepEquals, expected)
+}
+
+func (s *Ed448Suite) Test_PointDouble(c *C) {
+
+	q := &pointT{
+		&bigNumber{0x00000001},
+		&bigNumber{0x00000002},
+		&bigNumber{0x00000003},
+		&bigNumber{0x00000004},
+	}
+
+	expX := &bigNumber{0x0000003b, 0x10000000,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0ffffffe, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+	}
+
+	expY := &bigNumber{0x0000000e, 0x00000000,
+		0x00000000, 0x00000000,
+		0x00000000, 0x00000000,
+		0x00000000, 0x00000000,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+	}
+
+	expZ := &bigNumber{0x0000002c, 0x10000000,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0ffffffe, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+	}
+
+	expT := &bigNumber{0x00000013, 0x00000000,
+		0x00000000, 0x00000000,
+		0x00000000, 0x00000000,
+		0x00000000, 0x00000000,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+	}
+
+	expected := &pointT{
+		expX,
+		expY,
+		expZ,
+		expT}
+
+	p := &pointT{
+		&bigNumber{},
+		&bigNumber{},
+		&bigNumber{},
+		&bigNumber{},
+	}
+
+	p.pointDoubleInternal(q, false)
+
+	c.Assert(p, DeepEquals, expected)
+
+	resetPoint(p)
+	p.pointDoubleInternal(q, true)
+
+	exp1X := &bigNumber{0x0000003b, 0x10000000,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0ffffffe, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+	}
+
+	exp1Y := &bigNumber{0x0000000e, 0x00000000,
+		0x00000000, 0x00000000,
+		0x00000000, 0x00000000,
+		0x00000000, 0x00000000,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+	}
+
+	exp1Z := &bigNumber{0x0000002c, 0x10000000,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0ffffffe, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+	}
+
+	exp1T := &bigNumber{0x00000002, 0x10000000,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0ffffffe, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+		0x0fffffff, 0x0fffffff,
+	}
+	expected1 := &pointT{
+		exp1X,
+		exp1Y,
+		exp1Z,
+		exp1T}
+
+	c.Assert(p, DeepEquals, expected1)
+
 }
 
 func (s *Ed448Suite) Test_GenerateConstant(c *C) {

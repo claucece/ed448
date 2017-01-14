@@ -88,7 +88,6 @@ func scalarCopy(a [scalarWords]word_t) (out [scalarWords]word_t) {
 	return out
 }
 
-//In Progress
 func scHalve(a, b [scalarWords]word_t) (out [scalarWords]word_t) {
 	mask := -(a[0] & 1)
 	var chain dword_t
@@ -145,4 +144,25 @@ func convertNielsToPt(dst *pointT, src *twNiels) {
 	dst.x.sub(src.b, src.a)
 	dst.t.mul(dst.y, dst.x)
 	dst.z.copyFrom(One)
+}
+
+// Hisil formula 5.1.3
+func (p *pointT) pointDoubleInternal(q *pointT, beforeDouble bool) {
+	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
+	c.square(q.x)
+	a.square(q.y)
+	d.addRaw(c, a)
+	p.t.addRaw(q.y, q.x)
+	b.square(p.t)
+	b.decafSubRawWithX(b, d, 3) // change this
+	p.t.sub(a, c)
+	p.x.square(q.z)
+	p.z.addRaw(p.x, p.x)
+	a.decafSubRawWithX(p.z, p.t, 4)
+	p.x.mul(a, b)
+	p.z.mul(p.t, a)
+	p.y.mul(p.t, d)
+	if !beforeDouble {
+		p.t.mul(b, d)
+	}
 }
