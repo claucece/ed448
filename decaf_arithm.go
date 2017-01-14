@@ -93,6 +93,12 @@ func (n *bigNumber) decafWeakReduce() {
 	}
 }
 
+// Substract with bias
+// n = x - y
+func (n *bigNumber) decafSubRawWithX(x, y *bigNumber, amt uint32) *bigNumber {
+	return n.subRaw(x, y).bias(amt).weakReduce()
+}
+
 // Substract mod p
 // n = x - y
 func (n *bigNumber) decafSub(x, y *bigNumber) {
