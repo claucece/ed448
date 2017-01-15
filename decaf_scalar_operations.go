@@ -1,5 +1,7 @@
 package ed448
 
+import "fmt"
+
 type scalarT [scalarWords]word_t
 
 var (
@@ -108,12 +110,20 @@ func scHalve(a, b [scalarWords]word_t) (out [scalarWords]word_t) {
 	return
 }
 
+func printScalar(t string, s [scalarWords]word_t) {
+	fmt.Println(t)
+	for _, i := range s {
+		fmt.Printf("%x \n", i)
+	}
+}
+
 //In Progress
 func scalarAdjustment() [scalarWords]word_t {
 	var smadj [scalarWords]word_t
 	one := [scalarWords]word_t{0x01}
 	smadj = scalarCopy(one)
-	for i := uint(0); i < 8*4*14; i++ {
+
+	for i := uint(0); i < uint(8)*uint(4)*uint(14); i++ { //works until 8*8*13
 		smadj = scalarAdd(smadj, smadj)
 	}
 	smadj = scalarSub(smadj, one)

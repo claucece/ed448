@@ -203,16 +203,27 @@ func (s *Ed448Suite) Test_PointDouble(c *C) {
 
 func (s *Ed448Suite) Test_GenerateConstant(c *C) {
 
-	c.Skip("in progress")
+	c.Skip("In progress")
 
-	constant := [scalarWords]word_t{
-		0x4a7bb0cf, 0xc873d6d5, 0x23a70aad, 0xe933d8d7, 0x129c96fd, 0xbb124b65, 0x335dc163,
-		0x00000008, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+	adjustmentConstant := [scalarWords]word_t{0x529eec33,
+		0x721cf5b5,
+		0xc8e9c2ab,
+		0x7a4cf635,
+		0x44a725bf,
+		0xeec492d9,
+		0x0cd77058,
+		0x00000002,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
+		0x00000000,
 	}
 
-	scalar := scalarAdjustment()
+	sc := scalarAdjustment()
 
-	c.Assert(constant, DeepEquals, scalar)
+	c.Assert(sc, DeepEquals, adjustmentConstant)
 }
 
 func (s *Ed448Suite) Test_AddNielsToProjective(c *C) {
