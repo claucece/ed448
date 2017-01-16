@@ -2,8 +2,9 @@ package ed448
 
 import (
 	"errors"
-	"golang.org/x/crypto/sha3"
 	"io"
+
+	"golang.org/x/crypto/sha3"
 )
 
 type word_t uint32
@@ -176,7 +177,13 @@ func (c *curveT) multiplyByBase(scalar [scalarWords]word_t) *twExtensible {
 			tab ^= invert
 			tab &= (1 << (t - 1)) - 1
 
+			//fmt.Println("tab", tab)
+			//fmt.Println("t", t)
+
+			//ni = baseTable.lookup(1, 5, uint(7))
 			ni = baseTable.lookup(j, t, uint(tab))
+
+			//fmt.Println("ni", ni)
 			ni.conditionalNegate(invert)
 
 			if i != 0 || j != 0 {
