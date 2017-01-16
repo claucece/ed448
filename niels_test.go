@@ -45,3 +45,56 @@ func (s *DecafNielsSuite) Test_DecafLookup(c *C) {
 	c.Assert(expC, DeepEquals, point.c)
 
 }
+
+func (s *DecafNielsSuite) Test_DecafCondNegNiels(c *C) {
+
+	n := &twNiels{
+		&bigNumber{0x00000000},
+		&bigNumber{0x0ac67eac, 0x08c3224f,
+			0x038fe548, 0x09a46a59,
+			0x0e30ed3f, 0x032c1eb2,
+			0x08ebe610, 0x03168199,
+			0x0dd4e788, 0x06d5a576,
+			0x077ec52f, 0x00987f7d,
+			0x03a54795, 0x08cbe066,
+			0x0db4e599, 0x0af8126b,
+		},
+		&bigNumber{0x08db85c2, 0x0fd2361e,
+			0x0ce2105d, 0x06a17729,
+			0x0e3ca84d, 0x0a137aa5,
+			0x0985ee61, 0x05a26d64,
+			0x0734c5f3, 0x0da853af,
+			0x01d955b7, 0x03160ecd,
+			0x0a59046d, 0x0c32cf71,
+			0x98dce72d, 0x00007fff,
+		},
+	}
+
+	expA := &bigNumber{0x00000000}
+	expB := &bigNumber{0x0ac67eac, 0x08c3224f,
+		0x038fe548, 0x09a46a59,
+		0x0e30ed3f, 0x032c1eb2,
+		0x08ebe610, 0x03168199,
+		0x0dd4e788, 0x06d5a576,
+		0x077ec52f, 0x00987f7d,
+		0x03a54795, 0x08cbe066,
+		0x0db4e599, 0x0af8126b,
+	}
+
+	expC := &bigNumber{0x08db85c2, 0x0fd2361e,
+		0x0ce2105d, 0x06a17729,
+		0x0e3ca84d, 0x0a137aa5,
+		0x0985ee61, 0x05a26d64,
+		0x0734c5f3, 0x0da853af,
+		0x01d955b7, 0x03160ecd,
+		0x0a59046d, 0x0c32cf71,
+		0x98dce72d, 0x00007fff,
+	}
+
+	n.condNegNiels(word_t(0))
+
+	c.Assert(expA, DeepEquals, n.a)
+	c.Assert(expB, DeepEquals, n.b)
+	c.Assert(expC, DeepEquals, n.c)
+
+}

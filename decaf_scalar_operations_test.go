@@ -344,3 +344,7 @@ func (s *Ed448Suite) Test_ConvertNielsToProjective(c *C) {
 	c.Assert(oldProjective.z, DeepEquals, expected.z)
 	c.Assert(oldProjective.t, DeepEquals, expected.t)
 }
+
+func (s *Ed448Suite) Test_CondNegNiels(c *C) {
+
+}
