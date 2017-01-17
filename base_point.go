@@ -1,6 +1,6 @@
 package ed448
 
-func decafPointValidate(p *pointT) word_t {
+func (p *pointT) decafPointValidate() word_t {
 	a, b, c := &bigNumber{}, &bigNumber{}, &bigNumber{}
 	a.decafMul(p.x, p.y)
 	b.decafMul(p.z, p.t)

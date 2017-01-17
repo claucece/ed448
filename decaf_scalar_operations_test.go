@@ -42,19 +42,28 @@ func (s *Ed448Suite) TearDownTest(c *C) {
 func (s *Ed448Suite) Test_ScalarAdditionAndSubtraction(c *C) {
 
 	scalar1 := [scalarWords]word_t{
-		50, 0, 0, 0, 6, 0, 0, 3, 0, 0, 0, 2, 1, 1,
+		0x529eec33, 0x721cf5b5,
+		0xc8e9c2ab, 0x7a4cf635,
+		0x44a725bf, 0xeec492d9,
+		0x0cd77058, 0x00000002,
 	}
 
 	scalar2 := [scalarWords]word_t{
-		5, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 1,
+		0x00000001,
 	}
 
 	subExp := [scalarWords]word_t{
-		45, 0, 0, 0, 6, 0, 0, 1, 0, 0, 0, 2, 1, 0,
+		0x529eec32, 0x721cf5b5,
+		0xc8e9c2ab, 0x7a4cf635,
+		0x44a725bf, 0xeec492d9,
+		0x0cd77058, 0x00000002,
 	}
 
 	addExp := [scalarWords]word_t{
-		55, 0, 0, 0, 6, 0, 0, 5, 0, 0, 0, 2, 1, 2,
+		0x529eec34, 0x721cf5b5,
+		0xc8e9c2ab, 0x7a4cf635,
+		0x44a725bf, 0xeec492d9,
+		0x0cd77058, 0x00000002,
 	}
 
 	added := scalarAdd(scalar1, scalar2)

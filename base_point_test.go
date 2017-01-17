@@ -122,7 +122,7 @@ func (s *Ed448Suite) Test_ValidateBasePoint(c *C) {
 
 	l.decafMul(gx, bigNumOne)
 
-	c.Assert(decafPointValidate(p), Equals, word_t(0xffffffff))
+	c.Assert(p.decafPointValidate(), Equals, word_t(0xffffffff))
 	c.Assert(l, DeepEquals, px)
 	c.Assert(w, DeepEquals, w1)
 	c.Assert(a, DeepEquals, a1)

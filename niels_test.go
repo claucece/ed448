@@ -38,7 +38,11 @@ func (s *DecafNielsSuite) Test_DecafLookup(c *C) {
 		0x050288a8, 0x0dea434a,
 	}
 
-	point := precomputedBaseTable.decafLookup(0, 2, uint(1)) //0, 9, 16
+	zerothNiels := uint(0)
+	sixteenthNiels := uint(16)
+	ninethNiels := uint(9)
+
+	point := precomputedBaseTable.decafLookup(zerothNiels, sixteenthNiels, ninethNiels)
 
 	c.Assert(expA, DeepEquals, point.a)
 	c.Assert(expB, DeepEquals, point.b)
