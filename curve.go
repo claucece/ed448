@@ -245,7 +245,7 @@ func pseudoRandomFunction(k [symKeyBytes]byte) []byte {
 func DeserializeModQ(dst []byte, serial []byte) {
 	var deser []word_t
 	barrettDeserializeAndReduce(deser, serial, &curvePrimeOrder)
-	wordsToBytes(dst[:], deser)
+	wordsToBytes(dst[:], deser[:])
 
 }
 
