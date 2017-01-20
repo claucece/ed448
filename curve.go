@@ -242,8 +242,11 @@ func pseudoRandomFunction(k [symKeyBytes]byte) []byte {
 
 //See Goldilocks spec, "Public and private keys" section.
 //This is equivalent to DESERMODq()
-func DeserializeModQ(dst []word_t, serial []byte) {
-	barrettDeserializeAndReduce(dst, serial, &curvePrimeOrder)
+func DeserializeModQ(dst []byte, serial []byte) {
+	var deser []word_t
+	barrettDeserializeAndReduce(deser, serial, &curvePrimeOrder)
+	wordsToBytes(dst[:], deser)
+
 }
 
 func generateSymmetricKey(read io.Reader) (symKey [symKeyBytes]byte, err error) {
@@ -257,7 +260,7 @@ func (c *curveT) derivePrivateKey(symmetricKey [symKeyBytes]byte) (privateKey, e
 
 	skb := pseudoRandomFunction(symmetricKey)
 	secretKey := [fieldWords]word_t{}
-	DeserializeModQ(secretKey[:], skb)
+	barrettDeserializeAndReduce(secretKey[:], skb, &curvePrimeOrder)
 	wordsToBytes(k.secretKey(), secretKey[:])
 
 	publicKey := c.multiplyByBase(secretKey)
