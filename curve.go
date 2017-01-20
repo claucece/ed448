@@ -242,7 +242,7 @@ func pseudoRandomFunction(k [symKeyBytes]byte) []byte {
 
 //See Goldilocks spec, "Public and private keys" section.
 //This is equivalent to DESERMODq()
-func deserializeModQ(dst []word_t, serial []byte) {
+func DeserializeModQ(dst []word_t, serial []byte) {
 	barrettDeserializeAndReduce(dst, serial, &curvePrimeOrder)
 }
 
