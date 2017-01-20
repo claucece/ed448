@@ -452,17 +452,17 @@ type pointT struct {
 	x, y, z, t *bigNumber
 }
 
-func hibit(x *bigNumber) word_t {
+func hibit(x *bigNumber) dword_t {
 	y := &bigNumber{}
 	y.add(x, x)
 	y.decafCanon()
-	return word_t(-(y[0] & 1))
+	return dword_t(-(y[0] & 1))
 }
 
 // encode from decafFast
 // only operation that changes is cond_neg
 // this is replacing untwistAndSerialize method
-func (p *pointT) deisogenize(s, c *bigNumber, t, overT word_t) *bigNumber {
+func (p *pointT) deisogenize(s, c *bigNumber, t, overT dword_t) *bigNumber {
 	b, d := &bigNumber{}, &bigNumber{}
 	a := s
 	a.mulWSignedCurveConstant(p.y, 1-(D))
@@ -572,7 +572,7 @@ func decodeFast(ser serialized, identity word_t) (*pointT, dword_t) {
 	n, succ := deserializeReturnMask(ser)
 	zero := decafEq(n, Zero)
 	succ &= identity | ^word_t(zero)
-	succ &= ^hibit(n)
+	succ &= word_t(^hibit(n))
 	a.square(n)
 	p.z.sub(One, a)
 	b.square(p.z)
@@ -581,8 +581,8 @@ func decodeFast(ser serialized, identity word_t) (*pointT, dword_t) {
 	b.mul(c, a)
 	d.isr(b)
 	e.square(d)
-	a.decafMul(e, b)
-	a.decafAdd(a, One)
+	a.mul(e, b)
+	a.add(a, One)
 	succ &= ^word_t(decafEq(a, Zero))
 	b.mul(c, d)
 	d.decafCondNegate(hibit(b))

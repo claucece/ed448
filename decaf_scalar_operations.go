@@ -6,20 +6,27 @@ type scalarT [scalarWords]word_t
 
 var (
 	scP = [scalarWords]word_t{
-		0x2378c292, 0xab5844f3,
-		0x216cc272, 0x8dc58f55,
-		0xc44edb49, 0xaed63690,
-		0xffffffff, 0x7cca23e9,
-		0xffffffff, 0xffffffff,
-		0xffffffff, 0xffffffff,
-		0x3fffffff, 0xffffffff,
+		0xab5844f3,
+		0x2378c292,
+		0x8dc58f55,
+		0x216cc272,
+		0xaed63690,
+		0xc44edb49,
+		0x7cca23e9,
+		0xffffffff,
+		0xffffffff,
+		0xffffffff,
+		0xffffffff,
+		0xffffffff,
+		0xffffffff,
+		0x3fffffff,
 	}
 )
 
 // twisted edward formula
 // from the normal decaf
 // XXX: decide which one is going to be used
-func (p *pointT) decafPointAddSub(q, r *pointT, sub word_t) {
+func (p *pointT) decafPointAddSub(q, r *pointT, sub dword_t) {
 	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 	b.decafSub(q.y, q.x)
 	c.decafSub(r.y, r.x)
@@ -156,7 +163,7 @@ func convertNielsToPt(dst *pointT, src *twNiels) {
 	dst.z.copyFrom(One)
 }
 
-// Hisil formula 5.1.3
+// Based on Hisil's formula 5.1.3: Doubling in E^e
 func (p *pointT) pointDoubleInternal(q *pointT, beforeDouble bool) {
 	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 	c.square(q.x)
@@ -164,15 +171,165 @@ func (p *pointT) pointDoubleInternal(q *pointT, beforeDouble bool) {
 	d.addRaw(c, a)
 	p.t.addRaw(q.y, q.x)
 	b.square(p.t)
-	b.decafSubRawWithX(b, d, 3) // change this
+	exponentBias := uint32(3)
+	b.decafSubRawWithX(b, d, exponentBias)
 	p.t.sub(a, c)
 	p.x.square(q.z)
 	p.z.addRaw(p.x, p.x)
-	a.decafSubRawWithX(p.z, p.t, 4)
+	exponentBias = uint32(4)
+	a.decafSubRawWithX(p.z, p.t, exponentBias)
 	p.x.mul(a, b)
 	p.z.mul(p.t, a)
 	p.y.mul(p.t, d)
 	if !beforeDouble {
 		p.t.mul(b, d)
 	}
+}
+
+func scalarPrint(s [scalarWords]word_t) {
+	for i := 0; i < 14; i++ {
+		fmt.Printf("%x \n", s[i])
+	}
+	fmt.Println("the end")
+}
+
+func (c *curveT) precomputedScalarMul(scalar [scalarWords]word_t) *pointT {
+	out := &pointT{
+		new(bigNumber),
+		new(bigNumber),
+		new(bigNumber),
+		new(bigNumber),
+	}
+
+	n := uint(5)
+	t := uint(5)
+	s := uint(18)
+
+	var scalar1 [scalarWords]word_t
+	scalar1 = scalarAdd(scalar, precomputedBaseTable.scalarAdjustment)
+
+	scalar1 = scHalve(scalar1, scP)
+
+	scalarPrint(scalar1)
+	var ni *twNiels
+
+	for i := int(s - 1); i >= 0; i-- {
+		if i != int(s-1) {
+			out.pointDoubleInternal(out, false)
+		}
+
+		for j := uint(0); j < n; j++ {
+			var tab word_t
+			for k := uint(0); k < t; k++ {
+				bit := uint(i) + s*(k+j*t)
+				if bit < 446 { // change 446 to constant
+					tab |= (scalar1[bit/uint(32)] >> (bit % uint(32)) & 1) << k
+					// change uint(32) to constant
+				}
+			}
+
+			invert := (int32(tab) >> (t - 1)) - 1
+			tab ^= word_t(invert)
+			tab &= (1 << (t - 1)) - 1
+
+			ni = precomputedBaseTable.decafLookup(j, t, uint(tab))
+
+			ni.conditionalNegate(word_t(invert))
+
+			if i != int(s-1) || j != 0 {
+				out.addNielsToProjective(ni, j == n-1 && i != 0)
+			} else {
+				convertNielsToPt(out, ni)
+			}
+		}
+	}
+	//pointPrint("x end", out.x)
+	//pointPrint("y end", out.y)
+	//pointPrint("z end", out.z)
+	//pointPrint("t end", out.t)
+
+	return out
+}
+
+func niPrint(n *twNiels) {
+	fmt.Printf("%s", "nielsA := &bigNumber{")
+	for i := 0; i < 16; i++ {
+		fmt.Printf("0x%08x,", n.a[i])
+	}
+	fmt.Printf("}, \n")
+	fmt.Printf("%s", "nielsB := &bigNumber{")
+	for i := 0; i < 16; i++ {
+		fmt.Printf("0x%08x,", n.b[i])
+	}
+	fmt.Printf("}, \n")
+	fmt.Printf("%s", "nielsC := &bigNumber{")
+	for i := 0; i < 16; i++ {
+		fmt.Printf("0x%08x,", n.c[i])
+	}
+	fmt.Printf("}, \n")
+
+}
+
+func pointPrint(s string, n *bigNumber) {
+	fmt.Printf("%s \n", s)
+	fmt.Printf("%s", "&bigNumber{")
+	for i := 0; i < 16; i++ {
+		fmt.Printf("0x%08x, \n", n[i])
+	}
+	fmt.Printf("} \n")
+}
+
+func (c *curveT) multiplyByBase2(scalar [scalarWords]word_t) *pointT {
+	out := &pointT{
+		&bigNumber{0x00},
+		new(bigNumber),
+		new(bigNumber),
+		new(bigNumber),
+	}
+
+	n := combNumber
+	t := combTeeth
+	s := combSpacing
+
+	schedule := make([]word_t, scalarWords)
+	scheduleScalarForCombs(schedule, scalar)
+
+	var ni *twNiels
+
+	for i := uint(0); i < s; i++ {
+		if i != 0 {
+			out.pointDoubleInternal(out, false)
+		}
+
+		for j := uint(0); j < n; j++ {
+			tab := word_t(0)
+
+			for k := uint(0); k < t; k++ {
+				bit := (s - 1 - i) + k*s + j*(s*t)
+				if bit < scalarWords*wordBits {
+					tab |= (schedule[bit/wordBits] >> (bit % wordBits) & 1) << k
+				}
+			}
+
+			invert := word_t(tab>>(t-1)) - 1
+			tab ^= invert
+			tab &= (1 << (t - 1)) - 1
+
+			//fmt.Println("tab", tab)
+			//fmt.Println("t", t)
+
+			//ni = baseTable.lookup(1, 5, uint(7))
+			ni = baseTable.lookup(j, t, uint(tab))
+
+			//fmt.Println("ni", ni)
+			ni.conditionalNegate(invert)
+
+			if i != 0 || j != 0 {
+				out.addNielsToProjective(ni, j == n-1 && i != 0)
+			} else {
+				convertNielsToPt(out, ni)
+			}
+		}
+	}
+	return out
 }

@@ -22,7 +22,6 @@ func (table *fixedTable) decafLookup(j, t, idx uint) *twNiels {
 
 var precomputedBaseTable = &fixedTable{}
 
-// is this the same if running the generation script with diff comb constants?
 func init() {
 	t := [80]*twNiels{
 		//0
@@ -525,7 +524,7 @@ func debugPrecomputedBaseTable() {
 	}
 }
 
-func (n *twNiels) condNegNiels(neg word_t) {
-	n.a.decafCondSwap(n.b, neg)
+func (n *twNiels) condNegNiels(neg dword_t) {
+	n.a.conditionalSwap(n.b, word_t(neg))
 	n.c.decafCondNegate(neg)
 }

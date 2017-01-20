@@ -154,7 +154,7 @@ func (n *bigNumber) decafAdd(x, y *bigNumber) {
 	n.decafWeakReduce()
 }
 
-func (n *bigNumber) decafCondSwap(x *bigNumber, swap word_t) {
+func (n *bigNumber) decafCondSwap(x *bigNumber, swap dword_t) {
 	for i := uint(0); i < Limbs; i++ {
 		s := n[i] ^ x[i]&limb(swap)
 		n[i] ^= s
@@ -164,16 +164,29 @@ func (n *bigNumber) decafCondSwap(x *bigNumber, swap word_t) {
 }
 
 // is neg? x : y
-func (n *bigNumber) decafCondSel(x, y *bigNumber, neg word_t) {
-	for i := uint(0); i < Limbs; i++ {
-		n[i] = (x[i] & limb(^neg)) | (y[i] & limb(neg))
-	}
+func (n *bigNumber) decafCondNegate(neg dword_t) {
+	y := &bigNumber{}
+	y.sub(&bigNumber{0}, n)
+	n.decafCondSel(n, y, neg)
 }
 
-func (n *bigNumber) decafCondNegate(neg word_t) {
-	y := &bigNumber{}
-	y.decafSub(&bigNumber{0}, n)
-	n.decafCondSel(n, y, neg)
+func (n *bigNumber) decafCondSel(x, y *bigNumber, neg dword_t) {
+	n[0] = (x[0] & limb(^neg)) | (y[0] & limb(neg))
+	n[1] = (x[1] & limb(^neg)) | (y[1] & limb(neg))
+	n[2] = (x[2] & limb(^neg)) | (y[2] & limb(neg))
+	n[3] = (x[3] & limb(^neg)) | (y[3] & limb(neg))
+	n[4] = (x[4] & limb(^neg)) | (y[4] & limb(neg))
+	n[5] = (x[5] & limb(^neg)) | (y[5] & limb(neg))
+	n[6] = (x[6] & limb(^neg)) | (y[6] & limb(neg))
+	n[7] = (x[7] & limb(^neg)) | (y[7] & limb(neg))
+	n[8] = (x[8] & limb(^neg)) | (y[8] & limb(neg))
+	n[9] = (x[9] & limb(^neg)) | (y[9] & limb(neg))
+	n[10] = (x[10] & limb(^neg)) | (y[10] & limb(neg))
+	n[11] = (x[11] & limb(^neg)) | (y[11] & limb(neg))
+	n[12] = (x[12] & limb(^neg)) | (y[12] & limb(neg))
+	n[13] = (x[13] & limb(^neg)) | (y[13] & limb(neg))
+	n[14] = (x[14] & limb(^neg)) | (y[14] & limb(neg))
+	n[15] = (x[15] & limb(^neg)) | (y[15] & limb(neg))
 }
 
 // XXX: move this to proper place and probably divide it in two functions

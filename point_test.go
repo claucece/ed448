@@ -235,7 +235,7 @@ func (s *Ed448Suite) TestDecafDecode(c *C) {
 func (s *Ed448Suite) TestHibit(c *C) {
 	x, _ := deserialize(serialized{0x12})
 
-	c.Assert(hibit(x), DeepEquals, word_t(0))
+	c.Assert(hibit(x), DeepEquals, dword_t(0))
 }
 
 func (s *Ed448Suite) TestConditionalNegate(c *C) {
