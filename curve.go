@@ -257,7 +257,7 @@ func (c *curveT) derivePrivateKey(symmetricKey [symKeyBytes]byte) (privateKey, e
 
 	skb := pseudoRandomFunction(symmetricKey)
 	secretKey := [fieldWords]word_t{}
-	deserializeModQ(secretKey[:], skb)
+	DeserializeModQ(secretKey[:], skb)
 	wordsToBytes(k.secretKey(), secretKey[:])
 
 	publicKey := c.multiplyByBase(secretKey)
