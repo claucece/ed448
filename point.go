@@ -452,11 +452,12 @@ type pointT struct {
 	x, y, z, t *bigNumber
 }
 
+// this tests if it is a power of 2 or not. Returns the rightmost 0-bit.
 func hibit(x *bigNumber) dword_t {
 	y := &bigNumber{}
 	y.add(x, x)
 	y.decafCanon()
-	return dword_t(-(y[0] & 1))
+	return dword_t(-(y[0] & 1)) //why is this not a bitwise not? Maybe in Golang is different.
 }
 
 // encode from decafFast
