@@ -50,6 +50,14 @@ func (p *pointT) decafPointAddSub(q, r *pointT, sub dword_t) {
 	p.t.decafMul(b, c)
 }
 
+func (p *pointT) decafPointAdd(a, b *pointT) {
+	p.decafPointAddSub(a, b, dword_t(0))
+}
+
+func (p *pointT) decafPointSub(a, b *pointT) {
+	p.decafPointAddSub(a, b, dword_t(0xffffffff))
+}
+
 // from now on this is decaf_fast
 // from decaf_fast
 // {extra,accum} - sub + p

@@ -46,7 +46,7 @@ func point2Torque(p, q *pointT) {
 // hypothetical other implementations of Decaf using a Montgomery or untwisted
 // Edwards model.
 // gives out the data hashed to the curve
-func decafNonuniformMapToCurve(ser serialized) (*pointT, dword_t) {
+func decafNonunifromHashToCurve(ser serialized) (*pointT, dword_t) { //is the size in ser necc? Is it even the correct one?
 	/*
 	   XXD = (u*r^2 + 1) * (d - u*r^2) * (1 - u*d*r^2) / (d+1) // c=u*r^2 && s = r
 	   factor(XX / (1/XXD))
@@ -189,4 +189,107 @@ func decafNonuniformMapToCurve(ser serialized) (*pointT, dword_t) {
 	//	p.y.decafMul(b, a)
 	//	p.t.decafMul(b, e)
 	//
+}
+
+func decafUniformFromhash(in serialized) (*pointT, dword_t) {
+
+	p1 := &pointT{
+		x: new(bigNumber),
+		y: new(bigNumber),
+		z: new(bigNumber),
+		t: new(bigNumber),
+	}
+
+	p, ret1 := decafNonunifromHashToCurve(in)
+	p2, ret2 := decafNonunifromHashToCurve(in)
+
+	p1.decafPointAdd(p, p2)
+
+	succ := ret1 | (ret2 << 4)
+
+	return p1, succ
+}
+
+//Inverse of elligator-like hash to curve.
+func decafInvertNonUniformElligator(p *pointT, hint dword_t) ([]byte, dword_t) {
+	sgnS := -(hint & 1)
+	sgnOverS := -(hint >> 1 & 1)
+	sgnR0 := -(hint >> 2 & 1)
+
+	a, b, c, d := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
+
+	a.decafMulW(p.y, 1-D)
+	c.decafMul(a, p.t)
+	a.decafMul(p.x, p.z)
+	d.decafSub(c, a)
+	a.decafAdd(p.z, p.y)
+	b.decafSub(p.z, p.y)
+	c.decafMul(b, a)
+	b.decafMulW(c, -D)
+	a.decafIsqrt(b)
+	b.decafMulW(a, -D)
+	c.decafMul(b, a)
+	a.decafMul(c, d)
+	d.decafAdd(b, b)
+	c.decafMul(d, p.z)
+	b.decafCondNegate(sgnOverS ^ (^hibit(c)))
+	c.decafCondNegate(sgnOverS ^ (^hibit(c)))
+	d.decafMul(b, p.y)
+	a.decafAdd(a, d)
+	a.decafCondNegate(hibit(a) ^ sgnS)
+
+	/* ok, s = a; c = -t/s */
+
+	b.decafMul(c, a)
+	b.decafSub(&bigNumber{0x01}, b) /* t+1 */
+	c.decafSqr(a)
+
+	/* s^2 */
+	/* identity adjustments */
+	/* in case of identity, currently c=0, t=0, b=1, will encode to 1 */
+	/* if hint is 0, -> 0 */
+	/* if hint is to neg t/s, then go to infinity, effectively set s to 1 */
+	isIdentity := decafEq(p.x, &bigNumber{0x00})
+	c.decafCondSel(c, &bigNumber{0x01}, isIdentity&sgnS)
+	b.decafCondSel(b, &bigNumber{0x00}, isIdentity & ^(sgnOverS & ^sgnS)) /* identity adjust */ // is it not?
+
+	d.decafMulW(c, (2*D - 1)) /* $d = (2d-a)s^2 */
+	a.decafAdd(b, d)          /* num? */
+	d.decafSub(b, d)          /* den? */
+	b.decafMul(a, d)          /* n*d */
+	a.decafCondSel(d, a, sgnS)
+	succ := decafIsqrtChk(c, b, dword_t(0xffffffff))
+	b.decafMul(a, c)
+	b.decafCondNegate(sgnR0 ^ hibit(b))
+
+	succ &= ^(decafEq(b, &bigNumber{0x00}) & sgnR0)
+
+	b.decafCanon()
+
+	var recovered []byte
+	var k, bits uint
+	var buf dword_t
+	for i := uint(0); i < Limbs; i++ {
+		buf |= dword_t(b[i]) << bits
+		for bits += Radix; (bits >= 8 || i == Limbs-1) && k < 56; bits, buf = bits-8, buf>>8 {
+			recovered[k] = byte(buf)
+			k++
+		}
+	}
+	return recovered, succ
+}
+
+func decafInvertUniformElligator(p *pointT, hint dword_t, ser serialized) ([]byte, dword_t) {
+
+	p2 := &pointT{
+		x: new(bigNumber),
+		y: new(bigNumber),
+		z: new(bigNumber),
+		t: new(bigNumber),
+	}
+
+	p1, _ := decafNonunifromHashToCurve(ser)
+	p2.decafPointSub(p, p1)
+	hash, succ := decafInvertNonUniformElligator(p2, hint)
+	return hash, succ
 }
