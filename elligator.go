@@ -22,6 +22,15 @@ const (
 	QuadraticNonresidue = -1
 )
 
+// 2-torque a point
+func point2Torque(p, q *pointT) {
+	p.x.decafSub(&bigNumber{0x00}, q.x)
+	p.y.decafSub(&bigNumber{0x00}, q.y)
+	p.z.copyFrom(q.z)
+	p.t.copyFrom(q.t)
+
+}
+
 //This function runs Elligator2 on the decaf Jacobi quartic model.  It then
 // uses the isogeny to put the result in twisted Edwards form.  As a result,
 // it is safe (cannot produce points of order 4), and would be compatible with
