@@ -170,6 +170,7 @@ func (n *bigNumber) decafCondNegate(neg dword_t) {
 	n.decafCondSel(n, y, neg)
 }
 
+// ** Constant time, x = is_z ? z : y */
 func (n *bigNumber) decafCondSel(x, y *bigNumber, neg dword_t) {
 	n[0] = (x[0] & limb(^neg)) | (y[0] & limb(neg))
 	n[1] = (x[1] & limb(^neg)) | (y[1] & limb(neg))

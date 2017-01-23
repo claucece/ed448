@@ -17,6 +17,14 @@ func (p *pointT) decafPointValidate() word_t {
 	return word_t(out)
 }
 
+//jack of all trades. Master of none
+func (p *pointT) convertTwExtensibleToTwExtended(e *twExtensible) {
+	p.x.copyFrom(e.x)
+	p.y.copyFrom(e.y)
+	p.z.copyFrom(e.z)
+	p.t.decafMul(e.t, e.u)
+}
+
 //func MToE(x, y *bigNumber) (*bigNumber, *bigNumber) {
 //	s, t := &bigNumber{}, &bigNumber{}
 //	s.decafSqrt(x)
