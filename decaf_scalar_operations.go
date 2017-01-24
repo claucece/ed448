@@ -1,7 +1,5 @@
 package ed448
 
-import "fmt"
-
 type scalarT [scalarWords]word_t
 
 var (
@@ -125,13 +123,6 @@ func scHalve(a, b [scalarWords]word_t) (out [scalarWords]word_t) {
 	return
 }
 
-func printScalar(t string, s [scalarWords]word_t) {
-	fmt.Println(t)
-	for _, i := range s {
-		fmt.Printf("%x \n", i)
-	}
-}
-
 //In Progress
 func scalarAdjustment() [scalarWords]word_t {
 	var smadj [scalarWords]word_t
@@ -194,13 +185,6 @@ func (p *pointT) pointDoubleInternal(q *pointT, beforeDouble bool) {
 	}
 }
 
-func scalarPrint(s [scalarWords]word_t) {
-	for i := 0; i < 14; i++ {
-		fmt.Printf("%x \n", s[i])
-	}
-	fmt.Println("the end")
-}
-
 func (c *curveT) precomputedScalarMul(scalar [scalarWords]word_t) *pointT {
 	out := &pointT{
 		new(bigNumber),
@@ -218,7 +202,6 @@ func (c *curveT) precomputedScalarMul(scalar [scalarWords]word_t) *pointT {
 
 	scalar1 = scHalve(scalar1, scP)
 
-	scalarPrint(scalar1)
 	var ni *twNiels
 
 	for i := int(s - 1); i >= 0; i-- {
@@ -251,93 +234,6 @@ func (c *curveT) precomputedScalarMul(scalar [scalarWords]word_t) *pointT {
 			}
 		}
 	}
-	//pointPrint("x end", out.x)
-	//pointPrint("y end", out.y)
-	//pointPrint("z end", out.z)
-	//pointPrint("t end", out.t)
 
-	return out
-}
-
-func niPrint(n *twNiels) {
-	fmt.Printf("%s", "nielsA := &bigNumber{")
-	for i := 0; i < 16; i++ {
-		fmt.Printf("0x%08x,", n.a[i])
-	}
-	fmt.Printf("}, \n")
-	fmt.Printf("%s", "nielsB := &bigNumber{")
-	for i := 0; i < 16; i++ {
-		fmt.Printf("0x%08x,", n.b[i])
-	}
-	fmt.Printf("}, \n")
-	fmt.Printf("%s", "nielsC := &bigNumber{")
-	for i := 0; i < 16; i++ {
-		fmt.Printf("0x%08x,", n.c[i])
-	}
-	fmt.Printf("}, \n")
-
-}
-
-func pointPrint(s string, n *bigNumber) {
-	fmt.Printf("%s \n", s)
-	fmt.Printf("%s", "&bigNumber{")
-	for i := 0; i < 16; i++ {
-		fmt.Printf("0x%08x, \n", n[i])
-	}
-	fmt.Printf("} \n")
-}
-
-func (c *curveT) multiplyByBase2(scalar [scalarWords]word_t) *pointT {
-	out := &pointT{
-		&bigNumber{0x00},
-		new(bigNumber),
-		new(bigNumber),
-		new(bigNumber),
-	}
-
-	n := combNumber
-	t := combTeeth
-	s := combSpacing
-
-	schedule := make([]word_t, scalarWords)
-	scheduleScalarForCombs(schedule, scalar)
-
-	var ni *twNiels
-
-	for i := uint(0); i < s; i++ {
-		if i != 0 {
-			out.pointDoubleInternal(out, false)
-		}
-
-		for j := uint(0); j < n; j++ {
-			tab := word_t(0)
-
-			for k := uint(0); k < t; k++ {
-				bit := (s - 1 - i) + k*s + j*(s*t)
-				if bit < scalarWords*wordBits {
-					tab |= (schedule[bit/wordBits] >> (bit % wordBits) & 1) << k
-				}
-			}
-
-			invert := word_t(tab>>(t-1)) - 1
-			tab ^= invert
-			tab &= (1 << (t - 1)) - 1
-
-			//fmt.Println("tab", tab)
-			//fmt.Println("t", t)
-
-			//ni = baseTable.lookup(1, 5, uint(7))
-			ni = baseTable.lookup(j, t, uint(tab))
-
-			//fmt.Println("ni", ni)
-			ni.conditionalNegate(invert)
-
-			if i != 0 || j != 0 {
-				out.addNielsToProjective(ni, j == n-1 && i != 0)
-			} else {
-				convertNielsToPt(out, ni)
-			}
-		}
-	}
 	return out
 }
