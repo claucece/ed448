@@ -5,7 +5,12 @@ const (
 	Limbs = 16
 	// Radix is the lbit
 	Radix     = 28
-	radixMask = limb(0xfffffff)
+	radixMask = limb(0xfffffff) // ((1ull<<LBITS)-1)
+	// LIMBHI(x) ((x##ull)>>LBITS
+	// LIMBLO(x) ((x##ull)&((1ull<<LBITS)-1))
+	// http://stackoverflow.com/questions/10493411/what-is-bit-masking
+	// masks to 1
+
 )
 
 func deserializeReturnMask(in serialized) (*bigNumber, word_t) {
@@ -62,6 +67,10 @@ func serialize(dst []byte, n *bigNumber) {
 
 }
 
+// biased or excess notation
+// The bitstring with N 0's maps to the smallest value and the bitstring with N 1's maps to the largest value
+// https://www.cs.umd.edu/class/sum2003/cmsc311/Notes/Data/bias.html
+// it reduces after sub
 func (n *bigNumber) bias(b uint32) *bigNumber {
 	var co1 = radixMask * limb(b)
 	var co2 = co1 - limb(b)
@@ -97,6 +106,8 @@ func (n *bigNumber) strongReduce() *bigNumber {
 	n[0] += n[15] >> 28
 	n[15] &= radixMask
 
+	// now the total is less than 2^448 - 2^(448-56) + 2^(448-56+8) < 2p
+	// compute total_value - p.  No need to reduce mod p.
 	//first for
 
 	scarry := int64(0)
@@ -165,6 +176,13 @@ func (n *bigNumber) strongReduce() *bigNumber {
 	scarry >>= 28
 
 	// second for
+
+	// can happen: it was >= p, so now scarry = 0 and this = x
+	// happens: it was < p, so now scarry = -1 and this = x - p + 2^448
+	// so let's add back in p.  will carry back off the top for 2^448.
+
+	// assert this: assert(is_zero(scarry) | is_zero(scarry+1));
+	//add it back
 
 	scarryMask := word_t(scarry) & word_t(radixMask)
 	carry := uint64(0)
