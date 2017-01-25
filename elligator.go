@@ -19,10 +19,11 @@ package ed448
 //y = (rX -(1 + X)^2) = (rX + (1 + X)^2)
 
 const (
-	QuadraticNonresidue = -1
+	quadraticNonresidue = -1
 )
 
 /** Inverse square root using addition chain. */
+// test this
 func decafIsqrtChk(y, x *bigNumber, zero dword_t) dword_t {
 	tmp0, tmp1 := &bigNumber{}, &bigNumber{}
 	y.decafIsqrt(x)
@@ -46,6 +47,7 @@ func point2Torque(p, q *pointT) {
 // hypothetical other implementations of Decaf using a Montgomery or untwisted
 // Edwards model.
 // gives out the data hashed to the curve
+// buff bytes are less than 56
 func decafNonunifromHashToCurve(ser serialized) (*pointT, dword_t) { //is the size in ser necc? Is it even the correct one?
 	/*
 	   XXD = (u*r^2 + 1) * (d - u*r^2) * (1 - u*d*r^2) / (d+1) // c=u*r^2 && s = r
